@@ -1,69 +1,87 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowDown, ArrowUpRight, Mail } from "lucide-react";
+import { portfolio } from "../data/portfolio";
+import { ProjectCard } from "../components/project-card";
+import { Reveal } from "../components/reveal";
+import { CopyEmail } from "../components/copy-email";
 
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+  return <div className="portfolio-sections">
+    <section id="home" className="hero wrap">
+      <Reveal>
+        <p className="eyebrow">Aditya Setia / Software Developer / Punjab, India</p>
+        <h1>I build software<br/>that <em>works.</em></h1>
+        <p className="hero-copy">I’m Aditya Setia, a full-stack developer specializing in secure, scalable web applications, business platforms, and AI-powered workflows.</p>
+        <div className="actions">
+          <Link className="button primary" href="#projects">Explore my work <ArrowUpRight size={17}/></Link>
+          {portfolio.resumePath && <a className="button ghost" href={portfolio.resumePath} download>Download resume <ArrowDown size={17}/></a>}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </Reveal>
+      <a className="scroll-cue" href="#about">Scroll to explore <ArrowDown size={15}/></a>
+    </section>
+
+    <section id="about" className="section wrap"><Reveal>
+      <SectionHead index="01" label="About" title={<>An engineer’s mindset.<br/><em>A builder’s instinct.</em></>}/>
+      <div className="about-grid">
+        <div className="body-large">
+          <p>I build practical software for the way businesses actually work. My experience spans full-stack delivery, secure authentication, database design, REST APIs, and production troubleshooting.</p>
+          <p>At MiriSoft Solutions, I work across the development lifecycle, from understanding requirements to implementation, deployment, and maintenance. I’m also pursuing a Master of Computer Applications.</p>
         </div>
-      </main>
-    </div>
-  );
+        <div className="facts">
+          <Fact label="Current role" value="Software Developer" detail="MiriSoft Solutions"/>
+          <Fact label="Location" value="Punjab, India" detail="Working in Ambala, Haryana"/>
+          <Fact label="Education" value="Master of Computer Applications" detail="Chandigarh University"/>
+          <Fact label="Focus" value="Full-stack systems" detail="SaaS · Security · AI workflows"/>
+        </div>
+      </div>
+    </Reveal></section>
+
+    <section id="experience" className="section wrap"><Reveal>
+      <SectionHead index="02" label="Experience" title={<>Building in the <em>real world.</em></>}/>
+      <div className="experience">
+        <div className="experience-date"><p className="eyebrow">Feb 2026 — Present</p><span>Ambala, Haryana</span></div>
+        <div className="experience-role"><h3>Software Developer</h3><span>Full-Time · MiriSoft Solutions</span></div>
+        <div className="experience-detail">
+          <p>Delivering production business applications across frontend, backend, data, and deployment.</p>
+          <ul>
+            <li>Own delivery from requirements and implementation through testing, debugging, deployment, and maintenance.</li>
+            <li>Develop business applications with modern JavaScript and TypeScript frameworks.</li>
+            <li>Contributed to SAPOMS, including legacy PHP backend and data migration, authentication, and role-based access.</li>
+            <li>Built a multi-tenant salon management platform covering CRM, appointments, billing, loyalty, and reporting.</li>
+          </ul>
+          <div className="tags"><span>Next.js</span><span>TypeScript</span><span>PostgreSQL</span><span>Prisma</span></div>
+        </div>
+      </div>
+    </Reveal></section>
+
+    <section id="projects" className="section wrap"><Reveal>
+      <div className="section-heading-row"><SectionHead index="03" label="Selected work" title={<>Systems with <em>substance.</em></>}/><Link className="text-link" href="/projects">All projects <ArrowUpRight size={17}/></Link></div>
+      <div className="project-list">{portfolio.projects.map((project, index) => <ProjectCard key={project.slug} project={project} index={index + 1}/>)}</div>
+    </Reveal></section>
+
+    <section id="skills" className="section wrap"><Reveal>
+      <SectionHead index="04" label="Capabilities" title={<>The tools behind <em>the work.</em></>}/>
+      <div className="skills-grid">{portfolio.skills.map(group => <div className="skill-group" key={group.name}><h3>{group.name}</h3><div className="skill-items">{group.items.map(item => <span key={item}>{item}</span>)}</div></div>)}</div>
+    </Reveal></section>
+
+    <section id="education" className="section wrap education-section"><Reveal>
+      <SectionHead index="05" label="Education" title={<>Always <em>learning.</em></>}/>
+      <div className="education-grid">{portfolio.education.map(item => <div className="education-card" key={item.degree}><p className="eyebrow">{item.dates}</p><h3>{item.degree}</h3><p>{item.school}</p><div className="tags">{item.coursework.map(course => <span key={course}>{course}</span>)}</div></div>)}</div>
+    </Reveal></section>
+
+    <section id="contact" className="contact"><div className="wrap"><Reveal>
+      <p className="eyebrow">Contact</p>
+      <h2>Let’s build something<br/><em>meaningful.</em></h2>
+      <p>Whether it’s an interesting opportunity, a challenging project, or a conversation about technology, I’d love to connect.</p>
+      <div className="actions"><a className="button primary" href={`mailto:${portfolio.email}`}>Send an email <Mail size={17}/></a><CopyEmail email={portfolio.email}/>{portfolio.resumePath && <a className="button ghost" href={portfolio.resumePath} download>Download resume</a>}</div>
+      <div className="contact-meta"><a href={`mailto:${portfolio.email}`}>{portfolio.email}</a><span>Punjab, India</span>{portfolio.social.github && <a href={portfolio.social.github}>GitHub</a>}{portfolio.social.linkedin && <a href={portfolio.social.linkedin}>LinkedIn</a>}</div>
+    </Reveal></div></section>
+  </div>;
+}
+
+function SectionHead({ index, label, title }: { index: string; label: string; title: React.ReactNode }) {
+  return <div className="section-head"><p className="eyebrow">{index} / {label}</p><h2>{title}</h2></div>;
+}
+function Fact({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return <div className="fact"><span className="eyebrow">{label}</span><strong>{value}</strong><small>{detail}</small></div>;
 }

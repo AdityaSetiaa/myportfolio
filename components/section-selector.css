@@ -18,13 +18,16 @@
     transform: translateY(-50%); border-radius: 999px; border: 1px solid var(--accent);
     background: color-mix(in srgb, var(--accent) 12%, transparent);
   }
+  .selector-window { pointer-events: auto; position: absolute; inset-inline: 0; top: 50%; height: calc(5 * var(--tab-height)); transform: translateY(-50%); overflow: clip;
+    mask-image: linear-gradient(to bottom, transparent, black var(--tab-height), black calc(100% - var(--tab-height)), transparent);
+  }
   .selector-track { position: absolute; top: 50%; width: 100%; transition: transform .65s cubic-bezier(.22,1,.36,1); pointer-events: auto; }
   .section-selector .selector-track a { display: flex; align-items: center; height: var(--tab-height); padding: 0 16px; }
   .section-selector .selector-track a::after { display: none; }
-  .selector-track span { transform-origin: left center; transition: transform .25s ease-out; }
+  .selector-track span { font-family: var(--font-serif); transform-origin: left center; transition: transform .3s ease-out, opacity .3s ease-out; }
   .nav-depth-0 span { transform: scale(1.5); }
   .nav-depth-1 span { transform: scale(1.25); }
-  .nav-depth-2 span { transform: scale(1); }
+  .nav-depth-2 span { transform: scale(.92); opacity: .68; }
   .section-selector .desktop-nav .resume-link { position: absolute; bottom: 14px; left: 12px; pointer-events: auto; }
 }
 .mobile-selector { display: none; }
@@ -32,7 +35,7 @@
   body { padding-bottom: calc(70px + env(safe-area-inset-bottom)); }
   .mobile-selector {
     position: fixed; inset: auto 0 0; z-index: 30; display: block;
-    overflow: clip; padding: 6px 0 calc(6px + env(safe-area-inset-bottom)); touch-action: pan-y;
+    overflow: visible; padding: 6px 0 calc(6px + env(safe-area-inset-bottom)); touch-action: pan-y;
     background: var(--background); border-top: 1px solid var(--border);
   }
   .mobile-selector::before {
@@ -48,32 +51,31 @@
     flex: 0 0 44px; height: 44px; display: grid; place-items: center;
     color: var(--muted-foreground); border: 1px solid transparent; border-radius: 999px;
   }
+  .mobile-selector-window {
+    width: min(100%, 240px); margin-inline: auto; overflow: clip;
+    mask-image: linear-gradient(to right, transparent, black 48px, black calc(100% - 48px), transparent);
+  }
+  .mobile-icon-track svg { transition: transform .3s ease-out, opacity .3s ease-out; }
+  .mobile-icon-track [data-depth="0"] svg { transform: scale(1.5); }
+  .mobile-icon-track [data-depth="1"] svg { transform: scale(1.25); }
+  .mobile-icon-track [data-depth="2"] svg { transform: scale(.92); opacity: .68; }
+  .mobile-selection-label {
+    position: absolute; bottom: calc(100% + 6px); left: 50%; translate: -50% 0;
+    pointer-events: none; padding: 4px 12px; border-radius: 12px;
+    background: var(--surface); color: var(--foreground); font: 16px Georgia, serif;
+    animation: selection-rise .32s ease-out both, selection-exit .3s ease-in 1.82s forwards;
+  }
+  @keyframes selection-rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes selection-exit {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(8px); }
+  }
   .mobile-selector a[aria-current] { color: var(--accent); }
   .mobile-selector a:focus-visible { outline-offset: -3px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .mobile-icon-track { transition: none; }
-}
-@media (max-width: 700px) {
-  .portfolio-sections {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-    height: calc(100dvh - 125px - env(safe-area-inset-bottom));
-  }
-  .portfolio-sections > section {
-    flex: 0 0 100%;
-    min-width: 0;
-    min-height: 0;
-    overflow-y: auto;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-    scroll-margin: 0;
-  }
-  .portfolio-sections > .wrap { padding-inline: 20px; }
-  .portfolio-sections > .hero { justify-content: safe center; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .portfolio-sections { scroll-behavior: auto; }
 }

@@ -17,21 +17,16 @@ const links = [
 ];
 
 export function SiteHeader() {
+  const selectorWindow = useRef<HTMLDivElement>(null);
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("home");
   const pathname = usePathname();
 
   useEffect(() => {
-    const panels = document.querySelector<HTMLElement>(".portfolio-sections");
     const update = () => {
       setScrolled(window.scrollY > 24);
       if (pathname !== "/") return;
-      if (panels && window.matchMedia("(max-width: 700px)").matches) {
-        const index = Math.round(panels.scrollLeft / panels.clientWidth);
-        setActive(links[index]?.id ?? "home");
-        return;
-      }
       const sections = ["home", "about", "experience", "projects", "skills", "education", "contact"]
         .map((id) => document.getElementById(id))
         .filter((section) => section !== null);
@@ -45,18 +40,30 @@ export function SiteHeader() {
     };
     update();
     window.addEventListener("scroll", update, { passive: true });
-    panels?.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
     return () => {
       window.removeEventListener("scroll", update);
-      panels?.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
   }, [pathname]);
 
+  useEffect(() => {
+    const selector = selectorWindow.current;
+    if (!selector) return;
+    const scrollContent = (event: WheelEvent) => {
+      if (event.ctrlKey || !event.cancelable || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+      const unit = event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? window.innerHeight
+        : event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 : 1;
+      event.preventDefault();
+      window.scrollBy({ top: event.deltaY * unit * 2.5, behavior: "instant" });
+    };
+    selector.addEventListener("wheel", scrollContent, { passive: false });
+    return () => selector.removeEventListener("wheel", scrollContent);
+  }, []);
   const current = pathname.startsWith("/projects") ? "projects" : active;
   const activeIndex = links.findIndex(({ id }) => id === current);
   const iconTrack = useRef<HTMLDivElement>(null);
+  const [labelReplay, setLabelReplay] = useState(0);
   const previousIndex = useRef(activeIndex);
   useLayoutEffect(() => {
     const count = links.length;
@@ -75,8 +82,10 @@ export function SiteHeader() {
     <div className="wrap nav-inner">
       <Link className="brand" href="/" aria-label="Aditya Setia home">AS<span>.</span></Link>
       <nav className="desktop-nav" aria-label="Main navigation">
+        <div ref={selectorWindow} className="selector-window">
         <div className="selector-track" style={{ transform: `translateY(calc(-0.5 * var(--tab-height) - ${activeIndex} * var(--tab-height)))` }}>
         {links.map(({ label, href, id }, index) => <Link key={id} href={href} className={`nav-depth-${Math.min(Math.abs(index - activeIndex), 2)} ${current === id ? "active" : ""}`} aria-current={current === id ? "location" : undefined}><span>{label}</span></Link>)}
+        </div>
         </div>
         {portfolio.resumePath && <a className="resume-link" href={portfolio.resumePath} download>Resume <ArrowUpRight size={15}/></a>}
       </nav>
@@ -97,24 +106,19 @@ export function SiteHeader() {
         const next = links[(activeIndex + (dx < 0 ? 1 : -1) + links.length) % links.length];
         if (next) currentTarget.querySelector<HTMLAnchorElement>(`a[href="${next.href}"]`)?.click();
       }}>
+        <span key={current + labelReplay} className="mobile-selection-label" aria-hidden="true">{links[activeIndex]?.label}</span>
+        <div className="mobile-selector-window">
         <div ref={iconTrack} className="mobile-icon-track" style={{ transform: `translateX(calc(-22px - ${(links.length + activeIndex) * 48}px))` }}>
-        {[-1, 0, 1].flatMap(copy => links.map(({ label, href, id, Icon }) => (
-                    <Link key={copy + id} href={href} aria-label={label} title={label}
+        {[-1, 0, 1].flatMap(copy => links.map(({ label, href, id, Icon }, index) => (
+          <Link data-depth={Math.min(2, Math.abs(copy * links.length + index - activeIndex))} key={copy + id} href={href} aria-label={label} title={label}
             tabIndex={copy === 0 ? undefined : -1} aria-hidden={copy === 0 ? undefined : true}
-            onClick={event => {
-              const section = document.getElementById(id);
-              const panels = section?.parentElement;
-              if (pathname !== "/" || !panels?.classList.contains("portfolio-sections")) return;
-              event.preventDefault();
-              panels.scrollTo({ left: links.findIndex(link => link.id === id) * panels.clientWidth, behavior: "instant" });
-              setActive(id);
-              if (location.hash !== "#" + id) history.pushState(null, "", href);
-            }}
+            onClick={() => { if (id === current) setLabelReplay(value => value + 1); }}
             aria-current={current === id ? "location" : undefined}>
             <Icon size={20} aria-hidden="true" />
           </Link>
         )))}
         {portfolio.resumePath && <a href={portfolio.resumePath} download aria-label="Download resume"><Download size={20}/></a>}
+        </div>
         </div>
       </nav></>;
 }

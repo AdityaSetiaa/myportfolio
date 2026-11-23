@@ -40,9 +40,9 @@ export function HeaderMarioScene({ blockRef, reward, onRewardEnd }: SceneProps) 
       <svg className="header-mario-floor" width="100%" focusable="false" shapeRendering="crispEdges">
         <defs>
           <pattern id={floorPattern} width="20" height="8" patternUnits="userSpaceOnUse">
-            <rect width="20" height="8" fill="#4A3C4A" />
-            <path fill="#786273" d="M0 0h20v1H0z" />
-            <path fill="#2A202A" d="M15 1h1v3h-1zM0 4h20v1H0zM5 5h1v3H5z" />
+            <rect width="20" height="8" fill="var(--mario-floor)" />
+            <path fill="var(--mario-floor-edge)" d="M0 0h20v1H0z" />
+            <path fill="var(--mario-floor-mortar)" d="M15 1h1v3h-1zM0 4h20v1H0zM5 5h1v3H5z" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill={`url(#${floorPattern})`} />

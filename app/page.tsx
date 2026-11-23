@@ -1,4 +1,5 @@
 import { MarioStop } from "../components/mario-stop";
+import { CherryBiome } from "../components/cherry-biome";
 import Link from "next/link";
 import { ArrowDown, ArrowUpRight, Mail } from "lucide-react";
 import { portfolio } from "../data/portfolio";
@@ -75,7 +76,7 @@ export default function Home() {
       <h2>Let’s build something<br/><em>meaningful.</em></h2>
       <p>Whether it’s an interesting opportunity, a challenging project, or a conversation about technology, I’d love to connect.</p>
       <div className="actions"><a className="button primary" href={`mailto:${portfolio.email}`} data-mario-platform="top">Send an email <Mail size={17}/><MarioStop /></a><CopyEmail email={portfolio.email}/>{portfolio.resumePath && <a className="button ghost" href={portfolio.resumePath} download data-mario-platform="top"><MarioStop />Download resume</a>}</div>
-      <div className="contact-meta" data-mario-platform="top"><MarioStop /><a href={`mailto:${portfolio.email}`}>{portfolio.email}</a><span>Punjab, India</span>{portfolio.social.github && <a href={portfolio.social.github}>GitHub</a>}{portfolio.social.linkedin && <a href={portfolio.social.linkedin}>LinkedIn</a>}</div>
+      <div className="contact-meta" data-mario-platform="top"><MarioStop /><CherryBiome /><a href={`mailto:${portfolio.email}`}>{portfolio.email}</a><span>Punjab, India</span>{portfolio.social.github && <a href={portfolio.social.github}>GitHub</a>}{portfolio.social.linkedin && <a href={portfolio.social.linkedin}>LinkedIn</a>}</div>
     </Reveal></div><MarioStop /></section>
   </div>;
 }

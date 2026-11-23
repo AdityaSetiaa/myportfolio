@@ -1,0 +1,19 @@
+.cherry-biome {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-end: 100%;
+  width: clamp(94px, 13vw, 175px);
+  height: auto;
+  margin-block-end: 1px;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .cherry-biome {
+    inset-block-start: calc(100% + 9px);
+    inset-block-end: auto;
+    width: 79px;
+  }
+
+  .cherry-biome-details { display: none; }
+}

@@ -14,7 +14,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: #1a141b;
+  background: var(--mario-sky);
 }
 
 .scene-cloud { position: absolute; opacity: .72; }
@@ -86,6 +86,7 @@
 
 @media (max-width: 700px) {
   .section-selector .nav-inner { min-height: 100px; }
+  .scene-cloud-last { right: max(7%, 64px); }
   .header-mario-strip { --size: 20px; --floor-height: 5px; --block-size: 12px; left: 76px; }
   .header-mario-runner { width: 24px; height: 24px; display: grid; place-items: end center; }
   .header-mario-runner .header-mario-sprite { width: var(--size); height: var(--size); }

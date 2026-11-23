@@ -1,0 +1,46 @@
+.theme-lantern {
+  position: fixed;
+  z-index: 25;
+  inset-block-start: max(3px, env(safe-area-inset-top));
+  inset-inline-end: max(5px, env(safe-area-inset-right));
+  display: block;
+  inline-size: 86px;
+  block-size: 88px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.theme-lantern svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.theme-lantern-hanging {
+  transform-origin: 32px 13px;
+  transition: transform 220ms ease;
+}
+
+.theme-lantern-glass {
+  filter: drop-shadow(0 0 5px #eda64c91);
+  transition: filter 220ms ease;
+}
+
+:root[data-theme="light"] .theme-lantern-glass {
+  filter: drop-shadow(0 0 3px #d294475e);
+}
+
+.theme-lantern:hover .theme-lantern-hanging { transform: rotate(-6deg); }
+.theme-lantern:active .theme-lantern-hanging { transform: rotate(4deg); }
+
+@media (max-width: 700px) {
+  .theme-lantern { inline-size: 60px; block-size: 62px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-lantern-hanging, .theme-lantern-glass { transition: none; }
+  .theme-lantern:hover .theme-lantern-hanging, .theme-lantern:active .theme-lantern-hanging { transform: none; }
+}

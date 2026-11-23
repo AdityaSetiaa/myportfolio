@@ -74,7 +74,7 @@
     from { opacity: 1; transform: translateY(0); }
     to { opacity: 0; transform: translateY(8px); }
   }
-  .mobile-selector a[aria-current] { color: var(--accent); }
+  .mobile-selector a[aria-current] { color: var(--accent-ink); }
   .mobile-selector a:focus-visible { outline-offset: -3px; }
 }
 @media (prefers-reduced-motion: reduce) {

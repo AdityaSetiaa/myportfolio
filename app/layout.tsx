@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import { SiteHeader } from "../components/site-header";
 import { SiteFooter } from "../components/site-footer";
+import { ThemeLanternToggle } from "../components/theme-lantern-toggle";
+import { restoreThemeBeforePaint } from "../components/theme-preference";
 import "./globals.css";
 
 const sans = Geist({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
@@ -15,5 +17,15 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  return <html lang="en" className={`${sans.variable} ${mono.variable} ${serif.variable}`}><body id="top" suppressHydrationWarning><SiteHeader/><main>{children}</main><SiteFooter/></body></html>;
+  return (
+    <html lang="en" className={`${sans.variable} ${mono.variable} ${serif.variable}`} suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: restoreThemeBeforePaint }} /></head>
+      <body id="top" suppressHydrationWarning>
+        <SiteHeader />
+        <ThemeLanternToggle />
+        <main>{children}</main>
+        <SiteFooter />
+      </body>
+    </html>
+  );
 }

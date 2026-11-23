@@ -20,6 +20,7 @@ export default function Home() {
         </div>
       </Reveal>
       <a className="scroll-cue" href="#about">Scroll to explore <ArrowDown size={15}/></a>
+      <CherryBiome hero />
     </section>
 
     <section id="about" className="section wrap" data-mario-platform="divider"><Reveal>

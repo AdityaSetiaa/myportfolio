@@ -2,7 +2,7 @@ type Span = { left: number; right: number };
 
 const clearance = 4;
 const borderSelector = "[data-mario-platform]";
-const obstacleSelector = "a, button, input, select, textarea, svg, img, .project-visual, [contenteditable]";
+const obstacleSelector = "a, button, input, select, textarea, svg:not(.hero-biome-art), [data-mario-obstacle], img, .project-visual, [contenteditable]";
 
 export function measureMarioPlatform(slot: HTMLElement, mobile: boolean) {
   const platform = slot.parentElement!;

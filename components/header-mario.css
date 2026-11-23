@@ -1,0 +1,54 @@
+.header-mario-lane {
+  --size: 26px;
+  position: absolute;
+  inset: auto 0 0;
+  height: var(--size);
+  pointer-events: none;
+}
+
+.header-mario-runner {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: var(--size);
+  height: var(--size);
+  border: 0;
+  padding: 0;
+  background: transparent;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.header-mario-runner > span, .header-mario-sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.header-mario-sprite {
+  background: url("/header-mario.png") no-repeat;
+  background-size: 300% 100%;
+  background-position-x: calc(var(--frame, 0) * 50%);
+  image-rendering: pixelated;
+  transform: scaleX(var(--facing, 1));
+}
+
+.header-mario-jump { animation: mario-hop 420ms both; }
+.header-mario-jump .header-mario-sprite { background-position-x: 50%; }
+
+@keyframes mario-hop {
+  0% { transform: translateY(0); animation-timing-function: ease-out; }
+  48% { transform: translateY(-17px); animation-timing-function: ease-in; }
+  100% { transform: translateY(0); }
+}
+
+@media (max-width: 700px) {
+  .header-mario-lane { --size: 20px; }
+  .header-mario-runner { width: 24px; height: 24px; display: grid; place-items: end center; }
+  .header-mario-runner > span { width: var(--size); height: var(--size); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-mario-jump { animation: mario-tap 160ms both; }
+  @keyframes mario-tap { 50% { opacity: .7; } }
+}

@@ -1,3 +1,4 @@
+.section-selector .brand { position: relative; z-index: 1; }
 @media (min-width: 701px) {
   body { --rail-width: clamp(152px, 15vw, 205px); padding-left: var(--rail-width); }
   .site-header.section-selector, .site-header.section-selector.scrolled {
@@ -11,7 +12,7 @@
   .section-selector .nav-inner { position: relative; width: 100%; height: 100%; display: block; padding: 22px; }
   .section-selector .desktop-nav {
     --tab-height: min(46px, 6.7dvh);
-    position: absolute; inset: 0 12px; translate: 75px 0; display: block; pointer-events: none;
+    position: absolute; z-index: 1; inset: 0 12px; translate: 75px 0; display: block; pointer-events: none;
   }
   .section-selector .desktop-nav::before {
     content: ""; position: absolute; top: 50%; inset-inline: 0; height: var(--tab-height);

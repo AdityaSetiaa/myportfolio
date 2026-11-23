@@ -1,5 +1,6 @@
 "use client";
 import "./section-selector.css";
+import { HeaderMario } from "./header-mario";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -90,6 +91,7 @@ export function SiteHeader() {
         {portfolio.resumePath && <a className="resume-link" href={portfolio.resumePath} download>Resume <ArrowUpRight size={15}/></a>}
       </nav>
     </div>
+    <HeaderMario />
   </header>
     <nav className="mobile-selector" aria-label="Section navigation"
       onTouchStart={({ touches }) => {

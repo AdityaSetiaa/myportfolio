@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import "./header-mario.css";
+import { HeaderMarioScene } from "./header-mario-scene";
 
 const speed = 36; // CSS pixels per second
 const frameDistance = 5;
@@ -9,81 +10,124 @@ const frameDistance = 5;
 export function HeaderMario() {
   const lane = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
-  const position = useRef(0);
-  const direction = useRef(1);
-  const stride = useRef(0);
-  const [jumping, setJumping] = useState(false);
+  const sprite = useRef<HTMLSpanElement>(null);
+  const block = useRef<HTMLDivElement>(null);
+  const jump = useRef<(() => void) | null>(null);
+  const [reward, setReward] = useState(false);
 
   useEffect(() => {
     const track = lane.current;
     const runner = button.current;
-    if (!track || !runner) return;
+    const body = sprite.current;
+    const target = block.current;
+    if (!track || !runner || !body || !target) return;
 
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let limit = 0;
-    let request = 0;
-    let last = 0;
+    let x = 0, direction = 1, stride = 0;
+    let height = 0, velocity = 0, gravity = 0;
+    let airborne = false;
+    let limit = 0, request = 0, last = 0;
 
     function paint() {
-      if (!runner) return;
-      runner.style.transform = `translateX(${position.current}px)`;
-      runner.style.setProperty("--facing", String(direction.current));
-      runner.style.setProperty("--frame", String(Math.floor(stride.current / frameDistance) % 3));
+      runner!.style.transform = `translate(${x}px, ${-height}px)`;
+      runner!.style.setProperty("--facing", String(direction));
+      runner!.style.setProperty("--frame", String(airborne ? 1 : Math.floor(stride / frameDistance) % 3));
     }
 
     function tick(now: number) {
-      const distance = last ? speed * Math.min(now - last, 50) / 1000 : 0;
+      const dt = last ? Math.min(now - last, 50) / 1000 : 0;
       last = now;
-      if (limit > 0) {
-        // Reflect the excess distance at each end so the turn has no position reset.
+      if (airborne) {
+        let next = height + velocity * dt - gravity * dt * dt / 2;
+        velocity -= gravity * dt;
+        if (next > height) {
+          const head = body!.getBoundingClientRect();
+          const box = target!.getBoundingClientRect();
+          const gap = head.top - box.bottom;
+          if (head.right > box.left && head.left < box.right && gap >= -0.01 && next - height >= gap) {
+            next = height + gap;
+            velocity = 0;
+            setReward(true);
+          }
+        }
+        height = Math.max(0, next);
+        airborne = height > 0 || velocity > 0;
+      } else if (limit > 0 && !motion.matches) {
+        // Reflect excess travel at the boundary without resetting the stride.
+        const distance = speed * dt;
         const period = 2 * limit;
-        const along = direction.current > 0 ? position.current : period - position.current;
+        const along = direction > 0 ? x : period - x;
         const phase = (along + distance) % period;
-        direction.current = phase < limit ? 1 : -1;
-        position.current = Math.min(phase, period - phase);
-        stride.current += distance;
-        paint();
+        direction = phase < limit ? 1 : -1;
+        x = Math.min(phase, period - phase);
+        stride += distance;
       }
-      request = requestAnimationFrame(tick);
+      paint();
+      if (airborne || !motion.matches) request = requestAnimationFrame(tick);
     }
 
     function syncPlayback() {
       cancelAnimationFrame(request);
       last = 0;
-      if (!motion.matches && !document.hidden && !jumping) request = requestAnimationFrame(tick);
+      if (!document.hidden && (airborne || !motion.matches)) request = requestAnimationFrame(tick);
     }
 
     function measure() {
-      if (!track || !runner) return;
-      limit = Math.max(0, track.clientWidth - runner.offsetWidth);
-      position.current = Math.min(position.current, limit);
+      limit = Math.max(0, track!.clientWidth - runner!.offsetWidth);
+      if (motion.matches) {
+        const box = target!.getBoundingClientRect();
+        x = box.left - track!.getBoundingClientRect().left + (box.width - runner!.offsetWidth) / 2;
+      }
+      x = Math.max(0, Math.min(x, limit));
       paint();
     }
 
+    function updatePreference() {
+      height = velocity = 0;
+      airborne = false;
+      measure();
+      syncPlayback();
+    }
+
+    jump.current = () => {
+      if (airborne) return;
+      const size = body.getBoundingClientRect().height;
+      gravity = size * 42;
+      velocity = Math.sqrt(2 * gravity * size * 1.4);
+      airborne = true;
+      syncPlayback();
+    };
     const observer = new ResizeObserver(measure);
     observer.observe(track);
     observer.observe(runner);
     measure();
     syncPlayback();
-    motion.addEventListener("change", syncPlayback);
+    motion.addEventListener("change", updatePreference);
     document.addEventListener("visibilitychange", syncPlayback);
     return () => {
+      jump.current = null;
       cancelAnimationFrame(request);
       observer.disconnect();
-      motion.removeEventListener("change", syncPlayback);
+      motion.removeEventListener("change", updatePreference);
       document.removeEventListener("visibilitychange", syncPlayback);
     };
-  }, [jumping]);
+  }, []);
 
   return (
-    <div ref={lane} className="header-mario-lane">
-      <button ref={button} type="button" className="header-mario-runner"
-        aria-label="Make Mario jump" onClick={() => setJumping(true)}>
-        <span className={jumping ? "header-mario-jump" : undefined}
-          onAnimationEnd={() => setJumping(false)} aria-hidden="true">
-          <span className="header-mario-sprite" />
-        </span>
-      </button>
+    <div className="header-mario-strip">
+      <HeaderMarioScene blockRef={block} reward={reward} onRewardEnd={() => setReward(false)} />
+      <div ref={lane} className="header-mario-lane">
+        <button ref={button} type="button" className="header-mario-runner"
+          aria-label="Make Mario jump" onClick={() => jump.current?.()}
+          onKeyDown={event => {
+            if (event.key === "ArrowUp" || event.key === " ") {
+              event.preventDefault();
+              if (!event.repeat) jump.current?.();
+            }
+          }}>
+          <span ref={sprite} className="header-mario-sprite" aria-hidden="true" />
+        </button>
+      </div>
     </div>
   );
 }

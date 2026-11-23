@@ -1,3 +1,4 @@
+import { MarioStop } from "../components/mario-stop";
 import Link from "next/link";
 import { ArrowDown, ArrowUpRight, Mail } from "lucide-react";
 import { portfolio } from "../data/portfolio";
@@ -13,14 +14,14 @@ export default function Home() {
         <h1>I build software<br/>that <em>works.</em></h1>
         <p className="hero-copy">I’m Aditya Setia, a full-stack developer specializing in secure, scalable web applications, business platforms, and AI-powered workflows.</p>
         <div className="actions">
-          <Link className="button primary" href="#projects">Explore my work <ArrowUpRight size={17}/></Link>
-          {portfolio.resumePath && <a className="button ghost" href={portfolio.resumePath} download>Download resume <ArrowDown size={17}/></a>}
+          <Link className="button primary" href="#projects" data-mario-platform="top">Explore my work <ArrowUpRight size={17}/><MarioStop /></Link>
+          {portfolio.resumePath && <a className="button ghost" href={portfolio.resumePath} download data-mario-platform="top"><MarioStop />Download resume <ArrowDown size={17}/></a>}
         </div>
       </Reveal>
       <a className="scroll-cue" href="#about">Scroll to explore <ArrowDown size={15}/></a>
     </section>
 
-    <section id="about" className="section wrap"><Reveal>
+    <section id="about" className="section wrap" data-mario-platform="divider"><Reveal>
       <SectionHead index="01" label="About" title={<>An engineer’s mindset.<br/><em>A builder’s instinct.</em></>}/>
       <div className="about-grid">
         <div className="body-large">
@@ -34,9 +35,9 @@ export default function Home() {
           <Fact label="Focus" value="Full-stack systems" detail="SaaS · Security · AI workflows"/>
         </div>
       </div>
-    </Reveal></section>
+    </Reveal><MarioStop /></section>
 
-    <section id="experience" className="section wrap"><Reveal>
+    <section id="experience" className="section wrap" data-mario-platform="divider"><Reveal>
       <SectionHead index="02" label="Experience" title={<>Building in the <em>real world.</em></>}/>
       <div className="experience">
         <div className="experience-date"><p className="eyebrow">Feb 2026 — Present</p><span>Ambala, Haryana</span></div>
@@ -52,30 +53,30 @@ export default function Home() {
           <div className="tags"><span>Next.js</span><span>TypeScript</span><span>PostgreSQL</span><span>Prisma</span></div>
         </div>
       </div>
-    </Reveal></section>
+    </Reveal><MarioStop /></section>
 
-    <section id="projects" className="section wrap"><Reveal>
+    <section id="projects" className="section wrap" data-mario-platform="divider"><Reveal>
       <div className="section-heading-row"><SectionHead index="03" label="Selected work" title={<>Systems with <em>substance.</em></>}/><Link className="text-link" href="/projects">All projects <ArrowUpRight size={17}/></Link></div>
-      <div className="project-list">{portfolio.projects.map((project, index) => <ProjectCard key={project.slug} project={project} index={index + 1}/>)}</div>
-    </Reveal></section>
+      <div className="project-list" data-mario-platform="top"><MarioStop />{portfolio.projects.map((project, index) => <ProjectCard key={project.slug} project={project} index={index + 1}/>)}</div>
+    </Reveal><MarioStop /></section>
 
-    <section id="skills" className="section wrap"><Reveal>
+    <section id="skills" className="section wrap" data-mario-platform="divider"><Reveal>
       <SectionHead index="04" label="Capabilities" title={<>The tools behind <em>the work.</em></>}/>
       <div className="skills-grid">{portfolio.skills.map(group => <div className="skill-group" key={group.name}><h3>{group.name}</h3><div className="skill-items">{group.items.map(item => <span key={item}>{item}</span>)}</div></div>)}</div>
-    </Reveal></section>
+    </Reveal><MarioStop /></section>
 
-    <section id="education" className="section wrap education-section"><Reveal>
+    <section id="education" className="section wrap education-section" data-mario-platform="divider"><Reveal>
       <SectionHead index="05" label="Education" title={<>Always <em>learning.</em></>}/>
-      <div className="education-grid">{portfolio.education.map(item => <div className="education-card" key={item.degree}><p className="eyebrow">{item.dates}</p><h3>{item.degree}</h3><p>{item.school}</p><div className="tags">{item.coursework.map(course => <span key={course}>{course}</span>)}</div></div>)}</div>
-    </Reveal></section>
+      <div className="education-grid" data-mario-platform="top"><MarioStop />{portfolio.education.map(item => <div className="education-card" key={item.degree}><p className="eyebrow">{item.dates}</p><h3>{item.degree}</h3><p>{item.school}</p><div className="tags">{item.coursework.map(course => <span key={course}>{course}</span>)}</div></div>)}</div>
+    </Reveal><MarioStop /></section>
 
-    <section id="contact" className="contact"><div className="wrap"><Reveal>
+    <section id="contact" className="contact" data-mario-platform="divider"><div className="wrap"><Reveal>
       <p className="eyebrow">Contact</p>
       <h2>Let’s build something<br/><em>meaningful.</em></h2>
       <p>Whether it’s an interesting opportunity, a challenging project, or a conversation about technology, I’d love to connect.</p>
-      <div className="actions"><a className="button primary" href={`mailto:${portfolio.email}`}>Send an email <Mail size={17}/></a><CopyEmail email={portfolio.email}/>{portfolio.resumePath && <a className="button ghost" href={portfolio.resumePath} download>Download resume</a>}</div>
-      <div className="contact-meta"><a href={`mailto:${portfolio.email}`}>{portfolio.email}</a><span>Punjab, India</span>{portfolio.social.github && <a href={portfolio.social.github}>GitHub</a>}{portfolio.social.linkedin && <a href={portfolio.social.linkedin}>LinkedIn</a>}</div>
-    </Reveal></div></section>
+      <div className="actions"><a className="button primary" href={`mailto:${portfolio.email}`} data-mario-platform="top">Send an email <Mail size={17}/><MarioStop /></a><CopyEmail email={portfolio.email}/>{portfolio.resumePath && <a className="button ghost" href={portfolio.resumePath} download data-mario-platform="top"><MarioStop />Download resume</a>}</div>
+      <div className="contact-meta" data-mario-platform="top"><MarioStop /><a href={`mailto:${portfolio.email}`}>{portfolio.email}</a><span>Punjab, India</span>{portfolio.social.github && <a href={portfolio.social.github}>GitHub</a>}{portfolio.social.linkedin && <a href={portfolio.social.linkedin}>LinkedIn</a>}</div>
+    </Reveal></div><MarioStop /></section>
   </div>;
 }
 

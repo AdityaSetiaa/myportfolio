@@ -20,7 +20,6 @@
 .scene-cloud { position: absolute; opacity: .72; }
 .scene-cloud-first { left: 8%; width: 22px; bottom: calc(var(--block-bottom) + 10px); }
 .scene-cloud-last { right: 7%; width: 16px; bottom: calc(var(--block-bottom) + 22px); }
-.scene-frame { position: absolute; left: 78%; bottom: var(--floor-height); }
 
 .scene-target {
   position: absolute; bottom: var(--block-bottom); left: 53%;
@@ -88,7 +87,6 @@
 @media (max-width: 700px) {
   .section-selector .nav-inner { min-height: 100px; }
   .header-mario-strip { --size: 20px; --floor-height: 5px; --block-size: 12px; left: 76px; }
-  .scene-frame { display: none; }
   .header-mario-runner { width: 24px; height: 24px; display: grid; place-items: end center; }
   .header-mario-runner .header-mario-sprite { width: var(--size); height: var(--size); }
 }
@@ -98,3 +96,53 @@
   .scene-coin { animation-name: coin-still; }
   @keyframes coin-still { from, to { opacity: 1; } }
 }
+/* The jamb sits in front of the sprite during a passage. */
+.mario-door {
+  position: absolute; bottom: 0; right: 8%;
+  width: calc(.9 * var(--size)); height: calc(var(--size) * 1.5);
+  background: #080609; border-top: 2px solid #6d5367;
+  clip-path: polygon(0 4px, 3px 4px, 3px 0, calc(100% - 3px) 0,
+    calc(100% - 3px) 4px, 100% 4px, 100% 100%, 0 100%);
+}
+.mario-door::after {
+  content: ""; position: absolute; inset: 0; border: 2px solid #40343f;
+  border-bottom-color: #6d5367; pointer-events: none;
+}
+.mario-door-leaf {
+  position: absolute; inset: 3px; background: #100d12;
+  border: 1px solid #40343f; transform-origin: left;
+}
+.mario-door-leaf::after {
+  content: ""; position: absolute; right: 1px; top: 52%;
+  width: 3px; height: 3px; background: #d58b9b;
+}
+.header-mario-lane[data-tour]::after, .mario-stop:has(.mario-visitor)::after {
+  content: ""; position: absolute; bottom: 0; right: 8%; width: calc(.9 * var(--size));
+  height: calc(var(--size) * 1.5 - 4px); border-inline: 2px solid #40343f;
+  pointer-events: none;
+}
+[data-mario-platform]:has(> .mario-stop) { position: relative; }
+.mario-stop {
+  --size: 26px;
+  position: absolute;
+  pointer-events: none;
+}
+.mario-stop .mario-door, .mario-stop:has(.mario-visitor)::after {
+  bottom: 0; right: calc(var(--size) * .05);
+}
+.mario-stop[data-side="left"] .mario-door,
+.mario-stop[data-side="left"]:has(.mario-visitor)::after {
+  left: calc(var(--size) * .05); right: auto;
+}
+.mario-visitor { position: absolute; right: 0; bottom: 0; width: var(--size); height: var(--size); }
+.mario-stop[data-side="left"] .mario-visitor { left: 0; right: auto; }
+.mario-visitor .header-mario-sprite, .header-mario-lane[data-tour] .header-mario-sprite {
+  animation: mario-door-steps 350ms steps(1, end) infinite;
+}
+@keyframes mario-door-steps {
+  0% { background-position-x: 0%; }
+  33% { background-position-x: 50%; }
+  66% { background-position-x: 100%; }
+}
+@media (max-width: 700px) { .mario-stop { --size: 20px; } }
+.mario-visitor[data-paused] .header-mario-sprite { animation-play-state: paused; }

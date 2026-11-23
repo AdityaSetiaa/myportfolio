@@ -37,10 +37,6 @@ export function HeaderMarioScene({ blockRef, reward, onRewardEnd }: SceneProps) 
           </svg>
         </div>}
       </div>
-      <svg className="scene-frame" width="18" height="21" viewBox="0 0 18 21" shapeRendering="crispEdges">
-        <path fill="#89758B" d="M0 21V4h3V1h11v3h3v17h-3V5H4v16z" />
-        <path fill="#D8C0D9" d="M1 5h1v15H1zM4 2h9v1H4z" />
-      </svg>
       <svg className="header-mario-floor" width="100%" focusable="false" shapeRendering="crispEdges">
         <defs>
           <pattern id={floorPattern} width="20" height="8" patternUnits="userSpaceOnUse">

@@ -15,5 +15,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  return <html lang="en" className={`${sans.variable} ${mono.variable} ${serif.variable}`}><body id="top"><SiteHeader/><main>{children}</main><SiteFooter/></body></html>;
+  return <html lang="en" className={`${sans.variable} ${mono.variable} ${serif.variable}`}><body id="top" suppressHydrationWarning><SiteHeader/><main>{children}</main><SiteFooter/></body></html>;
 }

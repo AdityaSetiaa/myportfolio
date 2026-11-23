@@ -2,12 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import "./header-mario.css";
+import { usePathname } from "next/navigation";
+import { createDoorTour } from "./mario-door-tour";
 import { HeaderMarioScene } from "./header-mario-scene";
 
 const speed = 36; // CSS pixels per second
 const frameDistance = 5;
 
 export function HeaderMario() {
+  const pathname = usePathname();
+  const door = useRef<HTMLDivElement>(null);
   const lane = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const sprite = useRef<HTMLSpanElement>(null);
@@ -20,7 +24,7 @@ export function HeaderMario() {
     const runner = button.current;
     const body = sprite.current;
     const target = block.current;
-    if (!track || !runner || !body || !target) return;
+    if (!track || !runner || !body || !target || !door.current) return;
 
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let x = 0, direction = 1, stride = 0;
@@ -34,7 +38,22 @@ export function HeaderMario() {
       runner!.style.setProperty("--frame", String(airborne ? 1 : Math.floor(stride / frameDistance) % 3));
     }
 
+    const tour = createDoorTour({
+      enabled: pathname === "/", lane: track, runner, sprite: body, door: door.current,
+      ready: () => !airborne && !runner.matches(":focus-visible"),
+      resumeAt: value => {
+        x = Math.max(0, Math.min(value, limit));
+        paint();
+      },
+    });
+
     function tick(now: number) {
+      tour.check(now);
+      if (tour.busy) {
+        last = now;
+        request = requestAnimationFrame(tick);
+        return;
+      }
       const dt = last ? Math.min(now - last, 50) / 1000 : 0;
       last = now;
       if (airborne) {
@@ -90,7 +109,7 @@ export function HeaderMario() {
     }
 
     jump.current = () => {
-      if (airborne) return;
+      if (airborne || tour.busy) return;
       const size = body.getBoundingClientRect().height;
       gravity = size * 42;
       velocity = Math.sqrt(2 * gravity * size * 1.4);
@@ -105,18 +124,22 @@ export function HeaderMario() {
     motion.addEventListener("change", updatePreference);
     document.addEventListener("visibilitychange", syncPlayback);
     return () => {
+      tour.dispose();
       jump.current = null;
       cancelAnimationFrame(request);
       observer.disconnect();
       motion.removeEventListener("change", updatePreference);
       document.removeEventListener("visibilitychange", syncPlayback);
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <div className="header-mario-strip">
       <HeaderMarioScene blockRef={block} reward={reward} onRewardEnd={() => setReward(false)} />
       <div ref={lane} className="header-mario-lane">
+        <div ref={door} className="mario-door" aria-hidden="true">
+          <span className="mario-door-leaf" />
+        </div>
         <button ref={button} type="button" className="header-mario-runner"
           aria-label="Make Mario jump" onClick={() => jump.current?.()}
           onKeyDown={event => {

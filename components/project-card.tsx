@@ -1,3 +1,4 @@
+import { MarioStop } from "./mario-stop";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import type { Project } from "../data/portfolio";
@@ -11,7 +12,8 @@ export function ProjectVisual({ visual }: { visual: string }) {
 }
 
 export function ProjectCard({ project, index }: { project: Project; index: number }) {
-  return <Link href={`/projects/${project.slug}`} className="project-card">
+  return <Link href={`/projects/${project.slug}`} className="project-card" data-mario-platform="bottom">
+    <MarioStop />
     <span className="project-index">0{index}</span>
     <div className="project-content">
       <p className="eyebrow">{project.category}</p>

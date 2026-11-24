@@ -1,0 +1,83 @@
+.companion-effects { position: fixed; inset: 0; z-index: 38; pointer-events: none; overflow: clip; }
+.companion-effects > * { position: absolute; }
+.companion-traveler { z-index: 1; }
+.companion-traveler > svg, .companion-traveler > .header-mario-sprite { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.companion-traveler-steve[data-facing="-1"] > svg { transform: scaleX(-1); }
+.companion-traveler[data-pose="throwing"] .voxel-pick-arm { rotate: -65deg; }
+.companion-traveler[data-pose="mining"] .voxel-pickaxe { opacity: 1; }
+.companion-traveler[data-pose="mining"] .voxel-pick-arm { animation: voxel-swing 260ms steps(4, end) 3; }
+.companion-traveler[data-pose="walking"] .header-mario-sprite { animation: mario-door-steps 340ms steps(1, end) infinite; }
+.companion-wave > .header-mario-sprite,
+.companion-traveler[data-pose="wave"] > .header-mario-sprite { animation: mario-door-steps 380ms steps(1, end); }
+.companion-wave .voxel-pick-arm,
+.companion-traveler[data-pose="wave"] .voxel-pick-arm { animation: companion-greet 380ms ease-in-out; }
+@keyframes companion-greet { 35% { rotate: -65deg; } 65% { rotate: -20deg; } }
+.voxel-world .voxel-explorer[data-companion-facing] > svg { scale: var(--facing) 1; }
+.companion-celebrate > .header-mario-sprite { animation: companion-cheer 550ms ease-in-out !important; }
+@keyframes companion-cheer { 42% { translate: 0 -12px; } }
+
+.companion-pipe {
+  z-index: 2;
+  background: linear-gradient(90deg, #274938 13%, #5c8b55 13% 27%, #7ca46a 27% 38%, #4d794d 38% 77%, #294c3c 77%);
+  clip-path: polygon(0 0,100% 0,100% 29%,89% 29%,89% 100%,11% 100%,11% 29%,0 29%);
+  border: 2px solid #243725;
+}
+.companion-pipe::before { content: ""; position: absolute; inset: 0 1px auto; height: 5px; background: #20342a; border: 1px solid #73936b; }
+.companion-pearl {
+  z-index: 3; width: 10px; height: 10px;
+  background: #69bfb2;
+  box-shadow: -5px 3px #9865d6, -11px -3px #c46bba, 5px -4px #573478, inset 2px 2px #b8ede0, inset -2px -2px #396c67;
+  clip-path: polygon(20% 0, 80% 0, 80% 20%, 100% 20%, 100% 80%, 80% 80%, 80% 100%, 20% 100%,20% 80%,0 80%,0 20%,20% 20%);
+}
+.companion-pearl:not(.companion-gem)::after { content: ""; position: absolute; inset: auto 1px 1px auto; width: 3px; height: 2px; background: #9865d6; }
+.companion-impact { z-index: 3; width: 4px; height: 4px; background: #ceb0cc; box-shadow: -12px 2px #9865d6, -6px -8px #573478, 10px -7px #c46bba, 12px 5px #ceb0cc, 3px -13px #9865d6; }
+.companion-ore {
+  width: 14px; height: 16px; background: #716176;
+  border: 2px solid #504254;
+  box-shadow: inset 2px 2px #968499, inset -2px -2px #433b4a;
+}
+.companion-ore::before { content: ""; position: absolute; width: 2px; height: 2px; left: 3px; top: 3px; background: #8bcec2; box-shadow: 4px 4px #7eb6af, -1px 6px #a4d9d0; }
+.companion-ore[data-hits]::after { content: ""; position: absolute; inset: 0; background: #43384c; clip-path: polygon(40% 0, 58% 40%, 48% 47%, 12% 0); }
+.companion-ore:is([data-hits="2"],[data-hits="3"])::after { clip-path: polygon(34% 0,70% 47%,100% 75%,100% 95%,65% 68%,30% 100%,10% 100%,55% 61%,10% 0); }
+
+.companion-speech {
+  position: fixed; z-index: 39; transform: translate(-50%, -100%); width: max-content; max-width: min(205px, 85vw);
+  padding: 7px 10px; color: var(--foreground); background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; font-size: 12px; line-height: 1.4; pointer-events: none;
+}
+.companion-speech strong { color: var(--accent-ink); }
+.companion-panel {
+  position: fixed; z-index: 42; width: min(322px, calc(100vw - 24px)); max-height: 330px; overflow: auto;
+  padding: 13px; background: var(--surface); color: var(--foreground); border: 1px solid var(--accent);
+  border-radius: 9px; font-size: 13px;
+}
+.companion-panel header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.companion-panel header strong { color: var(--accent-ink); font: 600 18px var(--font-serif); }
+.companion-panel button { cursor: pointer; }
+.companion-panel button:disabled { cursor: default; opacity: .65; }
+.companion-panel header button { width: 34px; height: 30px; font-size: 21px; line-height: 1; }
+.companion-log { max-height: 132px; overflow: auto; margin-block: 8px; display: grid; gap: 6px; }
+.companion-log p { margin: 0; overflow-wrap: anywhere; padding: 6px 8px; line-height: 1.5; background: var(--background); border-radius: 4px; }
+.companion-log [data-role="user"] { border-inline-start: 2px solid var(--accent); }
+.companion-options { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.companion-options button, .companion-panel form button { border: 1px solid var(--border); border-radius: 4px; padding: 5px 7px; }
+.companion-options button:hover { color: var(--accent-ink); }
+.companion-panel form { display: flex; gap: 6px; }
+.companion-panel input { min-width: 0; flex: 1; padding: 6px; border: 1px solid var(--border); background: var(--background); border-radius: 4px; }
+.companion-note { margin: 7px 0 0; color: var(--muted-foreground); font-size: 12px; }
+@media (max-width: 700px) {
+  .companion-panel { left: 12px !important; right: 12px; top: auto !important; bottom: calc(64px + env(safe-area-inset-bottom)); width: auto; max-height: min(325px, calc(100dvh - 188px)); }
+  .companion-options button, .companion-panel form button, .companion-panel header button { min-height: 34px; }
+  .companion-panel input { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .companion-traveler *, .companion-wave *, .companion-celebrate > .header-mario-sprite { animation: none !important; }
+}
+
+.companion-held-pearl { position: absolute; top: 36%; right: -1px; width: 7px; height: 7px; }
+.companion-traveler[data-facing="-1"] .companion-held-pearl { left: -1px; right: auto; }
+.companion-pearl-trail { width: 4px; height: 4px; background: #9865d6; box-shadow: -6px 3px #c46bba, 4px -5px #573478; }
+.companion-panel header strong { display: flex; align-items: center; gap: 8px; }
+.companion-portrait { display: inline-block; width: 15px; height: 16px; background-repeat: no-repeat; image-rendering: pixelated; }
+.companion-portrait[data-character="mario"] { background-image: url("/header-mario.png"); background-size: 300% 100%; }
+.companion-portrait[data-character="steve"] { background: #ad785f; box-shadow: inset 0 3px #4d3337, inset 0 -5px #518b85; clip-path: polygon(13% 0, 87% 0, 87% 63%, 100% 63%, 100% 100%, 0 100%, 0 63%, 13% 63%); }

@@ -136,6 +136,12 @@ export function createDoorTour({ enabled, lane, runner, sprite, door, ready, res
       await Promise.all([swing(guestDoor, false, signal), animate(visitor, [near, far], duration, signal, "linear")]);
       phase("turning");
       visitor.dataset.paused = "";
+      let conversation: Promise<void> | undefined;
+      window.dispatchEvent(new CustomEvent("companion-divider", { detail: {
+        signal,
+        accept: (result: Promise<void>) => { conversation = result; },
+      } }));
+      await conversation;
       await animate(visitor, [far, far], 450, signal);
       visitor.style.setProperty("--facing", String(-facing));
       delete visitor.dataset.paused;

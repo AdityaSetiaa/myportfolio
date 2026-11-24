@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import { SiteHeader } from "../components/site-header";
+import { CompanionWorld } from "../components/companions/companion-world";
 import { SiteFooter } from "../components/site-footer";
 import { CherryBlossomBranch } from "../components/cherry-blossom-branch";
 import { ThemeLanternToggle } from "../components/theme-lantern-toggle";
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </div>
         <main>{children}</main>
         <SiteFooter />
+        <CompanionWorld />
       </body>
     </html>
   );

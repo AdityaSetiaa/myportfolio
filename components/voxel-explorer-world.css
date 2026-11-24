@@ -147,3 +147,7 @@
   .voxel-world[data-phase="out"] .voxel-explorer { translate: var(--travel) 0; }
   .voxel-world[data-phase="turn"] .voxel-explorer svg { scale: -1 1; }
 }
+.voxel-character-control { padding: 0; border: 0; background: transparent; pointer-events: auto; cursor: pointer; }
+.voxel-character-control::after { content: ""; position: absolute; inset: -7px -8px 0; }
+.voxel-world[data-phase="portal"] .voxel-explorer { left: auto; right: 5px; }
+.voxel-world[data-phase="portal"] .voxel-explorer svg { scale: -1 1; }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import "./header-mario.css";
 import { usePathname } from "next/navigation";
 import { createDoorTour } from "./mario-door-tour";
+import { companionsReserved, conversationActive, openCompanion, registerActor } from "./companions/runtime";
 import { HeaderMarioScene } from "./header-mario-scene";
 
 const speed = 36; // CSS pixels per second
@@ -40,7 +41,7 @@ export function HeaderMario() {
 
     const tour = createDoorTour({
       enabled: pathname === "/", lane: track, runner, sprite: body, door: door.current,
-      ready: () => !airborne && !runner.matches(":focus-visible"),
+      ready: () => !airborne && !companionsReserved() && !conversationActive() && !runner.matches(":focus-visible"),
       resumeAt: value => {
         x = Math.max(0, Math.min(value, limit));
         paint();
@@ -49,7 +50,7 @@ export function HeaderMario() {
 
     function tick(now: number) {
       tour.check(now);
-      if (tour.busy) {
+      if (tour.busy || companionsReserved()) {
         last = now;
         request = requestAnimationFrame(tick);
         return;
@@ -109,13 +110,18 @@ export function HeaderMario() {
     }
 
     jump.current = () => {
-      if (airborne || tour.busy) return;
+      if (airborne || tour.busy || companionsReserved()) return;
       const size = body.getBoundingClientRect().height;
       gravity = size * 42;
       velocity = Math.sqrt(2 * gravity * size * 1.4);
       airborne = true;
       syncPlayback();
     };
+    const unregister = registerActor("mario", {
+      sprite: body, control: runner, platform: track,
+      ready: () => !airborne && !tour.busy && body.parentElement === runner,
+      perform: () => jump.current?.(),
+    });
     const observer = new ResizeObserver(measure);
     observer.observe(track);
     observer.observe(runner);
@@ -124,6 +130,7 @@ export function HeaderMario() {
     motion.addEventListener("change", updatePreference);
     document.addEventListener("visibilitychange", syncPlayback);
     return () => {
+      unregister();
       tour.dispose();
       jump.current = null;
       cancelAnimationFrame(request);
@@ -141,7 +148,7 @@ export function HeaderMario() {
           <span className="mario-door-leaf" />
         </div>
         <button ref={button} type="button" className="header-mario-runner"
-          aria-label="Make Mario jump" onClick={() => jump.current?.()}
+          aria-label="Talk to Mario" aria-haspopup="dialog" onClick={event => openCompanion("mario", event.currentTarget)}
           onKeyDown={event => {
             if (event.key === "ArrowUp" || event.key === " ") {
               event.preventDefault();

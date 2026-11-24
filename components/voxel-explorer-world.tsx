@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { companionsReserved, openCompanion, registerActor } from "./companions/runtime";
 import { VoxelExplorerArt, VoxelOre, VoxelPortalArt, VoxelWorldProps } from "./voxel-world-art";
 import "./voxel-explorer-world.css";
 
@@ -22,6 +23,8 @@ function wait(ms: number, signal: AbortSignal) {
 export function VoxelExplorerWorld() {
   const scene = useRef<HTMLDivElement>(null);
   const task = useRef<AbortController | null>(null);
+  const control = useRef<HTMLButtonElement>(null);
+  const startTrip = useRef<() => void>(null);
   const trips = useRef(0);
   const [phase, setPhase] = useState<Phase>("portal");
   const [hits, setHits] = useState(0);
@@ -29,7 +32,14 @@ export function VoxelExplorerWorld() {
 
   useEffect(() => {
     const element = scene.current;
-    if (!element) return;
+    const trigger = control.current;
+    const sprite = trigger?.querySelector("svg");
+    if (!element || !trigger || !sprite) return;
+    const unregister = registerActor("steve", {
+      sprite, control: trigger, platform: element,
+      ready: () => !task.current && sprite.parentElement === trigger,
+      perform: () => startTrip.current?.(),
+    });
     const observer = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting) task.current?.abort();
     });
@@ -37,6 +47,7 @@ export function VoxelExplorerWorld() {
     const stop = () => task.current?.abort();
     window.addEventListener("resize", stop);
     return () => {
+      unregister();
       window.removeEventListener("resize", stop);
       observer.disconnect();
       stop();
@@ -45,7 +56,7 @@ export function VoxelExplorerWorld() {
   }, []);
 
   async function explore() {
-    if (task.current || !scene.current) return;
+    if (task.current || companionsReserved() || !scene.current) return;
     const trip = new AbortController();
     const { signal } = trip;
     task.current = trip;
@@ -88,6 +99,11 @@ export function VoxelExplorerWorld() {
     }
   }
 
+  useEffect(() => {
+    startTrip.current = () => { void explore(); };
+    return () => { startTrip.current = null; };
+  });
+
   const active = phase !== "portal";
   return (
     <div className="voxel-world" data-phase={phase} data-mario-obstacle="voxel-world" ref={scene}>
@@ -98,7 +114,11 @@ export function VoxelExplorerWorld() {
         <VoxelPortalArt />
         <span className="voxel-portal-spark" aria-hidden="true" />
       </button>
-      {active && <div className="voxel-explorer" aria-hidden="true"><VoxelExplorerArt /></div>}
+      <button className="voxel-explorer voxel-character-control" type="button" ref={control}
+        aria-label="Talk to Steve" aria-haspopup="dialog"
+        onClick={event => openCompanion("steve", event.currentTarget)}>
+        <VoxelExplorerArt />
+      </button>
       {ore && (phase === "emerge" || phase === "out" || phase === "mine") && <VoxelOre hits={hits} />}
       {phase === "collect" && <span className="voxel-diamond" aria-hidden="true" />}
       <span className="voxel-reward" role="status">{phase === "collect" ? "+1 Diamond" : ""}</span>

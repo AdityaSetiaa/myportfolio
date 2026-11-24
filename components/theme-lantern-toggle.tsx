@@ -22,7 +22,7 @@ function subscribe(notify: () => void) {
   };
 }
 
-export function ThemeLanternToggle({ variant = "header" }: { variant?: "header" | "branch" }) {
+function useThemeSwitch() {
   const light = useSyncExternalStore(subscribe, () => document.documentElement.dataset.theme === "light", () => false);
 
   function toggleTheme() {
@@ -36,13 +36,32 @@ export function ThemeLanternToggle({ variant = "header" }: { variant?: "header" 
     }
   }
 
+  return { light, toggleTheme };
+}
+
+export function ContactLanternToggle() {
+  const { light, toggleTheme } = useThemeSwitch();
   return (
     <button
-      className={variant === "branch" ? "theme-lantern theme-lantern-branch" : "theme-lantern theme-lantern-header"}
+      className="theme-lantern theme-lantern-contact"
+      type="button"
+      aria-label={light ? "Switch to dark mode (Contact tree lantern)" : "Switch to light mode (Contact tree lantern)"}
+      onClick={toggleTheme}
+    />
+  );
+}
+
+export function ThemeLanternToggle({ variant = "header" }: { variant?: "header" | "branch" }) {
+  const { light, toggleTheme } = useThemeSwitch();
+  const switchLabel = light ? "Switch to dark mode" : "Switch to light mode";
+
+  return (
+    <button
+      className={`theme-lantern theme-lantern-${variant}`}
       type="button"
       aria-label={variant === "branch" ? "Light mode (cherry tree lantern)" : "Light mode"}
       aria-pressed={light}
-      title={light ? "Switch to dark mode" : "Switch to light mode"}
+      title={switchLabel}
       onClick={event => {
         if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
           event.currentTarget.querySelector("svg")?.animate(

@@ -8,6 +8,23 @@
   pointer-events: none;
 }
 
+.contact-biome-art { display: block; width: 100%; height: auto; }
+
+.cherry-biome .theme-lantern-contact {
+  position: absolute;
+  /* Center of the lantern body in the 184 × 142 SVG viewBox. */
+  left: 58.69565%;
+  top: 57.04225%;
+  translate: -50% -50%;
+  width: 28px;
+  height: 28px;
+  pointer-events: auto;
+}
+
+@media (pointer: coarse) {
+  .cherry-biome .theme-lantern-contact { width: 44px; height: 44px; }
+}
+
 @media (max-width: 900px) {
   .cherry-biome {
     inset-block-start: calc(100% + 9px);

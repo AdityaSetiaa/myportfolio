@@ -1,6 +1,6 @@
 import "./cherry-biome.css";
 import { VoxelExplorerWorld } from "./voxel-explorer-world";
-import { ThemeLanternToggle } from "./theme-lantern-toggle";
+import { ContactLanternToggle, ThemeLanternToggle } from "./theme-lantern-toggle";
 
 type BlockColors = {
   top: string;
@@ -43,7 +43,7 @@ function Block({ x, y, radius, depth, colors }: {
 
 function BiomeArt() {
   return (
-    <svg className="cherry-biome" viewBox="0 0 184 142" shapeRendering="crispEdges" aria-hidden="true" focusable="false">
+    <svg className="contact-biome-art" viewBox="0 0 184 142" shapeRendering="crispEdges" aria-hidden="true" focusable="false">
       {/* Receding bank, with a low step on the left. */}
       <Block x={47} y={98} radius={19} depth={12} colors={dirt} />
       <Block x={85} y={98} radius={19} depth={13} colors={dirt} />
@@ -78,11 +78,11 @@ function BiomeArt() {
 
       <g className="cherry-biome-details">
         <path fill="#e5a7bd" d="M27 58h3v3h-3zM151 70h3v3h-3zM124 85h3v2h-3zM59 79h2v3h-2z" />
-        <g>
-          <path fill="#61454e" d="M107 68h2v8h-2z M103 76h10v10h-10z" />
-          <path fill="#d9a580" d="M105 78h6v6h-6z" />
-          <path fill="#efc5a1" d="M107 79h2v4h-2z" />
-        </g>
+      </g>
+      <g>
+        <path fill="#61454e" d="M107 68h2v8h-2z M103 76h10v10h-10z" />
+        <path fill="#d9a580" d="M105 78h6v6h-6z" />
+        <path fill="#efc5a1" d="M107 79h2v4h-2z" />
       </g>
     </svg>
   );
@@ -142,7 +142,12 @@ function HeroTreeArt() {
   );
 }
 export function CherryBiome({ hero = false }: { hero?: boolean }) {
-  if (!hero) return <BiomeArt />;
+  if (!hero) return (
+    <div className="cherry-biome">
+      <BiomeArt />
+      <ContactLanternToggle />
+    </div>
+  );
   return (
     <div className="hero-biome">
       <HeroTreeArt />

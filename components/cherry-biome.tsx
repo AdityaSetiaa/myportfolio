@@ -1,4 +1,5 @@
 import "./cherry-biome.css";
+import { VoxelExplorerWorld } from "./voxel-explorer-world";
 import { ThemeLanternToggle } from "./theme-lantern-toggle";
 
 type BlockColors = {
@@ -145,6 +146,7 @@ export function CherryBiome({ hero = false }: { hero?: boolean }) {
   return (
     <div className="hero-biome">
       <HeroTreeArt />
+      <VoxelExplorerWorld />
       <ThemeLanternToggle variant="branch" />
     </div>
   );

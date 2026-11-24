@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import { SiteHeader } from "../components/site-header";
 import { SiteFooter } from "../components/site-footer";
+import { CherryBlossomBranch } from "../components/cherry-blossom-branch";
 import { ThemeLanternToggle } from "../components/theme-lantern-toggle";
 import { restoreThemeBeforePaint } from "../components/theme-preference";
 import "./globals.css";
@@ -22,7 +23,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head><script dangerouslySetInnerHTML={{ __html: restoreThemeBeforePaint }} /></head>
       <body id="top" suppressHydrationWarning>
         <SiteHeader />
-        <ThemeLanternToggle />
+        <div className="corner-world">
+          <CherryBlossomBranch />
+          <ThemeLanternToggle />
+        </div>
         <main>{children}</main>
         <SiteFooter />
       </body>

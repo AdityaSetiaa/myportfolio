@@ -1,0 +1,149 @@
+.voxel-world {
+  --explorer-width: 24px;
+  --ore-width: 22px;
+  --portal-width: 32px;
+  --travel: calc(100cqw - var(--ore-width) - var(--explorer-width) - 3px);
+  position: absolute;
+  inset-block-end: 0;
+  /* The artwork's left root begins 72 units into its 184-unit viewbox. */
+  inset-inline-end: calc(60.87% + 9px);
+  inline-size: clamp(118px, 13vw, 188px);
+  block-size: 55px;
+  container-type: inline-size;
+  pointer-events: none;
+}
+
+.voxel-portal {
+  position: absolute;
+  z-index: 2;
+  inset: auto auto 0 0;
+  width: max(44px, var(--portal-width));
+  height: 50px;
+  display: grid;
+  place-items: end start;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.voxel-portal[aria-disabled="true"] { cursor: default; }
+.voxel-portal svg { width: var(--portal-width); height: auto; }
+.voxel-portal:hover .voxel-portal-energy, .voxel-portal:focus-visible .voxel-portal-energy { fill: #a059b7; }
+.voxel-portal-ripples { animation: voxel-ripple 2.8s steps(3, end) infinite alternate; }
+@keyframes voxel-ripple {
+  from { opacity: .34; }
+  to { opacity: .94; }
+}
+
+.voxel-portal-spark {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  left: 26px;
+  bottom: 34px;
+  background: #be8bd1;
+  box-shadow: -19px -5px #9570a9;
+  animation: voxel-spark 3s ease-out infinite;
+}
+@keyframes voxel-spark {
+  0%, 70%, 100% { opacity: 0; }
+  28% { opacity: .7; }
+  70% { transform: translate(5px, -9px); }
+}
+
+.voxel-world-props { position: absolute; bottom: 0; left: 34px; width: 28px; opacity: .82; }
+.voxel-explorer {
+  position: absolute;
+  bottom: 0;
+  left: 3px;
+  width: var(--explorer-width);
+  z-index: 1;
+}
+.voxel-explorer svg { display: block; width: 100%; overflow: visible; }
+.voxel-pick-arm, .voxel-legs, .voxel-explorer-head { transform-box: fill-box; transform-origin: top center; }
+.voxel-pickaxe { opacity: 0; }
+
+.voxel-world:is([data-phase="out"], [data-phase="back"]) .voxel-explorer { animation-duration: var(--voxel-walk-time); animation-fill-mode: both; animation-timing-function: linear; }
+.voxel-world[data-phase="out"] .voxel-explorer { animation-name: voxel-walk-out; }
+.voxel-world[data-phase="back"] .voxel-explorer { animation-name: voxel-walk-back; }
+.voxel-world:is([data-phase="idle"], [data-phase="mine"], [data-phase="collect"], [data-phase="turn"]) .voxel-explorer { translate: var(--travel) 0; }
+.voxel-world:is([data-phase="back"], [data-phase="enter"]) .voxel-explorer svg { scale: -1 1; }
+.voxel-world[data-phase="emerge"] .voxel-explorer { animation: voxel-emerge 300ms ease-out both; }
+.voxel-world[data-phase="enter"] .voxel-explorer { animation: voxel-emerge 300ms ease-in reverse both; }
+.voxel-world:is([data-phase="out"], [data-phase="back"]) :is(.voxel-legs, .voxel-pick-arm) { animation: voxel-steps 220ms steps(2, end) infinite alternate; }
+.voxel-world[data-phase="idle"] .voxel-explorer-head { animation: voxel-look 420ms steps(3, end); }
+.voxel-world[data-phase="turn"] .voxel-explorer svg { animation: voxel-turn 190ms steps(2, end) both; }
+.voxel-world[data-phase="mine"] .voxel-pick-arm { animation: voxel-swing 410ms steps(4, end) 3; }
+.voxel-world[data-phase="mine"] .voxel-pickaxe { opacity: 1; }
+
+@keyframes voxel-walk-out { from { translate: 0 0; } to { translate: var(--travel) 0; } }
+@keyframes voxel-walk-back { from { translate: var(--travel) 0; } to { translate: 0 0; } }
+@keyframes voxel-emerge { from { opacity: 0; translate: -4px 0; } to { opacity: 1; translate: 0 0; } }
+@keyframes voxel-steps { from { rotate: -14deg; } to { rotate: 14deg; } }
+@keyframes voxel-look { 50% { translate: -2px 0; } }
+@keyframes voxel-turn { from { scale: 1 1; } to { scale: -1 1; } }
+@keyframes voxel-swing { 18% { rotate: -65deg; } 55% { rotate: 54deg; } }
+
+.voxel-ore { position: absolute; bottom: 0; right: 0; width: var(--ore-width); }
+.voxel-diamond {
+  position: absolute;
+  right: 6px;
+  bottom: 8px;
+  width: 12px;
+  height: 12px;
+  background: #96d8ca;
+  box-shadow: inset 2px 2px #d1f0dc, inset -2px -2px #528f90;
+  clip-path: polygon(25% 0, 75% 0, 100% 35%, 50% 100%, 0 35%);
+  animation: voxel-collect 540ms ease-out both;
+}
+.voxel-world[data-phase="collect"]::before {
+  content: "";
+  position: absolute;
+  right: 8px;
+  bottom: 9px;
+  width: 3px;
+  height: 3px;
+  background: #aacfc4;
+  box-shadow: -7px -4px #786383, 9px -4px #ab8ca7, 4px -11px #91bab6;
+  animation: voxel-ore-break 360ms ease-out both;
+}
+.voxel-reward {
+  position: absolute;
+  z-index: 3;
+  inset: auto 0 37px auto;
+  white-space: nowrap;
+  color: var(--accent-ink);
+  background: var(--surface);
+  border-radius: 3px;
+  font: 500 10px var(--font-mono), monospace;
+}
+.voxel-reward:not(:empty) { padding: 3px 4px; animation: voxel-reward-rise 920ms ease-out both; }
+@keyframes voxel-collect {
+  42% { translate: 1px -19px; opacity: 1; }
+  100% { translate: -20px -7px; opacity: 0; }
+}
+@keyframes voxel-ore-break { to { translate: 2px -10px; scale: 1.6; opacity: 0; } }
+@keyframes voxel-reward-rise {
+  0%, 42% { opacity: 0; translate: 0 3px; }
+  65%, 90% { opacity: 1; translate: 0 0; }
+  100% { opacity: 0; }
+}
+
+@media (max-width: 700px) {
+  .voxel-world {
+    --explorer-width: 19px;
+    --ore-width: 16px;
+    --portal-width: 25px;
+    inline-size: 100px;
+    block-size: 45px;
+  }
+  .voxel-portal { height: 44px; }
+  .voxel-world-props { left: 27px; width: 20px; }
+  .voxel-tuft { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voxel-world *, .voxel-world[data-phase="collect"]::before { animation: none !important; }
+  .voxel-world :is(.voxel-portal-spark, .voxel-diamond) { display: none; }
+  .voxel-world[data-phase="out"] .voxel-explorer { translate: var(--travel) 0; }
+  .voxel-world[data-phase="turn"] .voxel-explorer svg { scale: -1 1; }
+}

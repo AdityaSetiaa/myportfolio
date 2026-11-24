@@ -44,7 +44,7 @@ export function ThemeLanternToggle({ variant = "header" }: { variant?: "header" 
       aria-pressed={light}
       title={light ? "Switch to dark mode" : "Switch to light mode"}
       onClick={event => {
-        if (variant === "branch" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
           event.currentTarget.querySelector("svg")?.animate(
             [{ filter: "brightness(1)" }, { filter: "brightness(1.55)", offset: .22 }, { filter: "brightness(1)" }],
             { duration: 380, easing: "ease-out" }
@@ -53,19 +53,7 @@ export function ThemeLanternToggle({ variant = "header" }: { variant?: "header" 
         toggleTheme();
       }}
     >
-      <svg viewBox={variant === "branch" ? "10 10 43 76" : "0 0 86 88"} aria-hidden="true" shapeRendering="crispEdges">
-        {variant === "header" && <g>
-          <path fill="#422d30" d="M68 13h18v21H68z" />
-          <path fill="#65423f" d="M71 16h15v15H71z" />
-          <path fill="#513222" d="M52 11h24v17H52z" />
-          <path fill="#82502e" d="M55 13h18v12H55z" />
-          <path fill="#ba7b47" d="M57 16h12v2H57z" />
-          <path fill="#442a20" d="M22 1h64v16H22z" />
-          <path fill="#8c542e" d="M24 3h62v11H24z" />
-          <path fill="#c1844d" d="M24 3h62v2H24z" />
-          <path fill="#6d4028" d="M34 7h16v2H34zM60 11h18v2H60zM75 6h11v2H75z" />
-          <path fill="#d5a16b" d="M55 7h3v2h-3zM30 10h2v2h-2z" />
-        </g>}
+      <svg viewBox="10 10 43 76" aria-hidden="true" shapeRendering="crispEdges">
         <g className="theme-lantern-hanging">
           <path fill="#3e292a" d="M30 10h5v4h3v8h-2v19h-7V19h-1v-6h2z" />
           <path fill="#926957" d="M31 13h2v6h-1v19h-2V18h1z" />

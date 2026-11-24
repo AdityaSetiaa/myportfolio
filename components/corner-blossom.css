@@ -1,0 +1,55 @@
+.corner-world {
+  position: fixed;
+  z-index: 25;
+  inset: 0 0 auto auto;
+  width: clamp(260px, 35vw, 620px);
+  aspect-ratio: 430 / 184;
+  pointer-events: none;
+}
+
+.corner-blossom {
+  --petal-fall: clamp(14px, 3.7vw, 52px);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Let page text paint above the branch as it scrolls underneath. */
+body:has(> .corner-world) > main { position: relative; z-index: 1; }
+.corner-blossom-art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.corner-petals { position: absolute; inset: 0; overflow: clip; }
+.corner-petal, .corner-petal-burst { position: absolute; opacity: 0; }
+.corner-petal { animation: corner-petal-fall linear infinite; }
+.corner-petal-burst { width: 4px; height: 4px; }
+.corner-petals[data-paused] .corner-petal { animation-play-state: paused; }
+.corner-petals[data-paused] .corner-petal-burst { visibility: hidden; }
+
+@keyframes corner-petal-fall {
+  0%, 100% { opacity: 0; }
+  14%, 58% { opacity: .64; }
+  0% { translate: 0 0; rotate: 0deg; }
+  42% { rotate: 0deg; }
+  43%, 100% { rotate: 90deg; }
+  100% { translate: var(--petal-drift) var(--petal-fall); }
+}
+
+@media (max-width: 1050px) {
+  .corner-world { width: clamp(194px, 31vw, 350px); }
+  .corner-petal:nth-child(n+7) { display: none; }
+}
+
+@media (max-width: 700px) {
+  .corner-world { width: clamp(144px, 38vw, 188px); }
+  .corner-blossom-outer { display: none; }
+  .corner-petal:nth-child(n+4), .corner-petal-burst { display: none; }
+  .corner-petal { scale: .65; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .corner-petal, .corner-petal-burst { animation: none; display: none; }
+}

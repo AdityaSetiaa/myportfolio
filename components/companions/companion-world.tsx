@@ -1,304 +1,210 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { names, otherCharacter, type Character, type CompanionAction, type CompanionDecision, type CompanionRequest } from "../../data/companion-contract";
-import { actorFor, availableActions, companionsReserved, conversationActive, reserveCompanions, sceneContext, setConversationActive, visibleBox } from "./runtime";
+import { useEffect, useRef } from "react";
+import { behaviorDecision, callAction, otherCharacter, type BehaviorContext, type Character } from "@/data/companion-contract";
+import type { SpotlightEncounter } from "../mario-spotlight";
+import { between } from "./behavior";
+import { animate, delay } from "./effects";
+import { greetingApproach } from "./geometry";
+import { actorFor, currentSection, reserveCompanions, visibleBox } from "./runtime";
 import { canCall, travelTo } from "./travel";
-import { encounterGap } from "./geometry";
-import { delay } from "./effects";
 import "./companion-world.css";
 
-type Message = CompanionRequest["history"][number];
-type AIDecision = CompanionDecision & { source: "groq" | "local" };
-type Speech = { speaker: Character; text: string; x: number; y: number };
-type OpenDetail = { character: Character; anchor: HTMLElement };
 type DividerDetail = { signal: AbortSignal; accept: (result: Promise<void>) => void };
 
-async function ask(input: CompanionRequest, signal: AbortSignal): Promise<AIDecision> {
-  const response = await fetch("/api/companions/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-    signal,
-  });
-  if (!response.ok) throw new Error("Companion request failed");
-  return response.json();
+function sessionFlag(key: string) {
+  const storageKey = `companion-${key}`;
+  let used = false;
+  try { used = sessionStorage.getItem(storageKey) === "1"; } catch { /* Use the page lifetime. */ }
+  return {
+    get used() { return used; },
+    mark() {
+      used = true;
+      try { sessionStorage.setItem(storageKey, "1"); } catch { /* Use the page lifetime. */ }
+    },
+  };
 }
 
-function requestFor(character: Character, message: string, history: Message[], kind: CompanionRequest["kind"] = "chat"): CompanionRequest {
-  return { character, message, history, available: availableActions(character), ...sceneContext(character), kind };
-}
-
-const clock = () => performance.now();
-
-function visits(key: string, increment = false) {
+async function decide(input: BehaviorContext, signal: AbortSignal) {
+  const fallback = callAction(input.character);
   try {
-    const count = Number(sessionStorage.getItem(`companion-${key}`)) || 0;
-    if (increment) sessionStorage.setItem(`companion-${key}`, String(count + 1));
-    return count;
+    const response = await fetch("/api/companions/behavior", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+      signal: AbortSignal.any([signal, AbortSignal.timeout(2300)]),
+    });
+    if (!response.ok) return fallback;
+    const result = behaviorDecision.safeParse(await response.json());
+    return result.success && result.data.action === "INSPECT_OBJECT" ? result.data.action : fallback;
   } catch {
-    return 0;
+    return fallback;
   }
 }
-
-const introductions = {
-  mario: "Hey! Want to explore Aditya’s projects?",
-  steve: "Ask me about a project, its architecture, or the tools behind it.",
-};
-const suggestions = {
-  mario: ["What does Aditya do?", "Tell me about SAPOMS"],
-  steve: ["How does SAPOMS authentication work?", "Tell me about Trello Snap"],
-};
 
 export function CompanionWorld() {
-  const [panel, setPanel] = useState<{ character: Character; x: number; y: number } | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [draft, setDraft] = useState("");
-  const [pending, setPending] = useState(false);
-  const [note, setNote] = useState("");
-  const [speech, setSpeech] = useState<Speech | null>(null);
   const layer = useRef<HTMLDivElement>(null);
-  const input = useRef<HTMLInputElement>(null);
-  const log = useRef<HTMLDivElement>(null);
-  const anchor = useRef<HTMLElement>(null);
-  const chat = useRef<AbortController | null>(null);
-  const encounter = useRef<AbortController | null>(null);
-  const cooldown = useRef(0);
-
-  function speak(line: Omit<Speech, "x" | "y"> | null) {
-    if (!line) { setSpeech(null); return; }
-    const sprite = actorFor(line.speaker)?.sprite.getBoundingClientRect();
-    if (!sprite || !visibleBox(sprite)) { setSpeech(null); return; }
-    setSpeech({ ...line, x: Math.max(112, Math.min(innerWidth - 112, sprite.left + sprite.width / 2)), y: Math.max(60, sprite.top - 7) });
-  }
-
-  function close(restoreFocus = true) {
-    chat.current?.abort();
-    chat.current = null;
-    setPanel(null);
-    setPending(false);
-    setConversationActive(false);
-    if (restoreFocus) anchor.current?.focus({ preventScroll: true });
-  }
 
   useEffect(() => {
-    function open(event: Event) {
-      if (companionsReserved()) return;
-      const { character, anchor: button } = (event as CustomEvent<OpenDetail>).detail;
-      chat.current?.abort();
-      chat.current = null;
-      anchor.current = button;
-      setConversationActive(true);
-      const rect = button.getBoundingClientRect();
-      setPanel({ character, x: Math.min(Math.max(rect.left - 16, 12), innerWidth - 336), y: Math.min(Math.max(rect.top - 340, 12), innerHeight - 340) });
-      setMessages([{ role: "assistant", text: introductions[character] }]);
-      setPending(false);
-      setDraft("");
-      setNote("");
-    }
-    const cancelTravel = () => encounter.current?.abort();
+    const effects = layer.current;
+    if (!effects) return;
+    const stage = effects;
     const motion = matchMedia("(prefers-reduced-motion: reduce)");
-    let lastScroll = 0;
-    function scroll() {
-      lastScroll = performance.now();
-      cancelTravel();
-      if (!conversationActive() || !anchor.current || visibleBox(anchor.current.getBoundingClientRect())) return;
-      chat.current?.abort();
-      chat.current = null;
-      setPanel(null);
-      setPending(false);
-      setConversationActive(false);
-    }
-    function handleResize() {
-      cancelTravel();
-      if (!conversationActive() || !anchor.current) return;
-      const r = anchor.current.getBoundingClientRect();
-      setPanel(previous => previous && { ...previous, x: Math.min(Math.max(r.left - 16, 12), innerWidth - 336), y: Math.min(Math.max(r.top - 340, 12), innerHeight - 340) });
-    }
+    const mobile = matchMedia("(max-width: 700px)");
+    const calls = { mario: sessionFlag("visit-from-mario"), steve: sessionFlag("visit-from-steve") };
+    const planner = sessionFlag("behavior-planner");
+    let active: AbortController | null = null;
+    let cooldown = 0, lastScroll = 0, timer = 0;
+    const awake = () => !document.hidden && !motion.matches;
+    const free = () => awake() && !active && performance.now() >= cooldown && performance.now() - lastScroll >= 450;
 
-    function startAmbient() {
-      if (document.hidden || conversationActive() || encounter.current || visits("ambient") >= 1 ||
-          performance.now() < cooldown.current || performance.now() - lastScroll < 400 ||
-          matchMedia("(prefers-reduced-motion: reduce)").matches || !layer.current) return;
-      const caller = canCall("steve") ? "steve" : canCall("mario") && sceneContext("mario").section === "home" ? "mario" : null;
-      if (!caller || !actorFor(otherCharacter(caller)) || !visibleBox(actorFor(otherCharacter(caller))!.sprite.getBoundingClientRect())) return;
+    function start(run: (signal: AbortSignal) => Promise<void>, parent?: AbortSignal) {
+      if (!free() || parent?.aborted) return;
       const release = reserveCompanions();
       if (!release) return;
-      const control = new AbortController();
-      encounter.current = control;
-      visits("ambient", true);
-      void travelTo(caller, { layer: layer.current, signal: control.signal, speak }).catch(() => {}).finally(() => {
-        encounter.current = null;
-        cooldown.current = performance.now() + 21000;
+      const controller = new AbortController();
+      active = controller;
+      const signal = parent ? AbortSignal.any([parent, controller.signal]) : controller.signal;
+      return run(signal).catch(error => {
+        if (!signal.aborted) console.error("Companion animation interrupted", error);
+      }).finally(() => {
+        active = null;
+        cooldown = performance.now() + (mobile.matches ? 30000 : 19000);
         release();
       });
     }
 
+    function call(character: Character, platform?: HTMLElement, parent?: AbortSignal, askPlanner = false) {
+      const actor = actorFor(character);
+      const guest = actorFor(otherCharacter(character));
+      if (!actor || !guest || calls[character].used || !canCall(character, platform)) return;
+      return start(async signal => {
+        if (character === "mario" && askPlanner && !planner.used) {
+          planner.mark();
+          const decision = await decide({
+            character,
+            scene: platform ? "spotlight" : "discovery",
+            section: currentSection(actor),
+            platform: platform ? "section-divider" : "header",
+            nearbyObject: platform ? "project" : "ore",
+            spotlight: Boolean(platform),
+            companionNearby: visibleBox(guest.sprite.getBoundingClientRect()),
+          }, signal);
+          signal.throwIfAborted();
+          if (decision === "INSPECT_OBJECT") {
+            const pose = actor.sprite.dataset.pose;
+            actor.sprite.dataset.pose = "looking";
+            try { await delay(900, signal); } finally {
+              if (pose) actor.sprite.dataset.pose = pose;
+              else delete actor.sprite.dataset.pose;
+            }
+            return;
+          }
+        }
+        if (canCall(character, platform) && await travelTo(character, { layer: stage, signal }, platform)) calls[character].mark();
+      }, parent);
+    }
+
+    function schedule() {
+      clearTimeout(timer);
+      if (!awake() || calls.steve.used && calls.mario.used) return;
+      timer = window.setTimeout(() => {
+        if (free() && Math.random() < .62) {
+          const steve = actorFor("steve");
+          if (steve && visibleBox(steve.sprite.getBoundingClientRect())) {
+            const order: Character[] = Math.random() < .5 ? ["steve", "mario"] : ["mario", "steve"];
+            for (const character of order) if (call(character, undefined, undefined, character === "mario")) break;
+          }
+        }
+        schedule();
+      }, mobile.matches ? between(42000, 62000) : between(22000, 37000));
+    }
+
     function natural(event: Event) {
       const { signal, accept } = (event as CustomEvent<DividerDetail>).detail;
-      if (conversationActive() || encounter.current || performance.now() < cooldown.current ||
-          performance.now() - lastScroll < 250 || document.hidden || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const mario = actorFor("mario"), steve = actorFor("steve");
       if (!mario || !steve?.ready()) return;
       const a = mario.sprite.getBoundingClientRect(), b = steve.sprite.getBoundingClientRect();
-      const gap = encounterGap(a, b);
-      if (Math.abs(a.bottom - b.bottom) > 2 || gap < 10 || gap > 185 || !visibleBox(a) || !visibleBox(b)) return;
-      const release = reserveCompanions();
-      if (!release) return;
-      const control = new AbortController();
-      encounter.current = control;
-      const combined = AbortSignal.any([signal, control.signal]);
-      const vis = mario.sprite.parentElement;
-      vis?.style.setProperty("--facing", a.left < b.left ? "1" : "-1");
-      vis?.classList.add("companion-wave");
-      steve.control.classList.add("companion-wave");
-      accept((async () => {
+      const approach = greetingApproach(a, b, steve.platform);
+      if (approach === null || !visibleBox(a) || !visibleBox(b)) return;
+      const visitor = mario.sprite.parentElement;
+      if (!visitor?.matches(".mario-visitor")) return;
+      const facing = a.left < b.left ? 1 : -1;
+      const oldFacing = visitor.style.getPropertyValue("--facing");
+      const oldPose = mario.sprite.dataset.pose;
+      const result = start(async combined => {
+        visitor.style.setProperty("--facing", String(facing));
+        steve.control.style.setProperty("--facing", String(-facing));
         try {
-          speak({ speaker: "mario", text: "Hey Steve! We’re on the same ledge." });
-          await delay(1150, combined);
-          speak({ speaker: "steve", text: "Good eye. This divider makes a handy walking path." });
-          await delay(1150, combined);
-        } catch {
-          // Both controllers resume when a visitor scrolls away.
+          if (approach) {
+            mario.sprite.dataset.pose = "looking";
+            steve.control.dataset.reaction = "approach";
+            await animate(steve.control, [{ translate: "0 0" }, { translate: `${approach}px 0` }], Math.abs(approach) * 15, combined, "linear");
+          }
+          mario.sprite.dataset.pose = "waving";
+          await delay(340, combined);
+          const room = visitor.parentElement!.clientHeight - a.height;
+          if (room > 4 && Math.random() < .35) {
+            mario.sprite.dataset.pose = "jumping";
+            await animate(mario.sprite, [{ translate: "0 0" }, { translate: `0 -${Math.min(room, 9)}px` }, { translate: "0 0" }], 360, combined);
+            mario.sprite.dataset.pose = "waving";
+          }
+          steve.control.dataset.reaction = Math.random() < .5 ? "wave" : "raise";
+          await delay(850, combined);
+          if (approach) {
+            steve.control.style.setProperty("--facing", String(facing));
+            steve.control.dataset.reaction = "approach";
+            await animate(steve.control, [{ translate: `${approach}px 0` }, { translate: "0 0" }], Math.abs(approach) * 15, combined, "linear");
+          }
         } finally {
-          speak(null);
-          vis?.classList.remove("companion-wave");
-          steve.control.classList.remove("companion-wave");
-          encounter.current = null;
-          cooldown.current = performance.now() + 21000;
-          release();
+          mario.sprite.style.removeProperty("translate");
+          if (oldPose) mario.sprite.dataset.pose = oldPose;
+          else delete mario.sprite.dataset.pose;
+          visitor.style.setProperty("--facing", oldFacing);
+          steve.control.style.removeProperty("--facing");
+          steve.control.style.removeProperty("translate");
+          delete steve.control.dataset.reaction;
         }
-      })());
+      }, signal);
+      if (result) accept(result);
     }
-    const interval = window.setInterval(startAmbient, 34000);
-    window.addEventListener("companion-open", open);
+
+    function spotlight(event: Event) {
+      const { signal, platform, canTravel, accept } = (event as CustomEvent<SpotlightEncounter>).detail;
+      if (canTravel && Math.random() < (mobile.matches ? .15 : .32)) {
+        const result = call("mario", platform, signal, true);
+        if (result) {
+          accept(result);
+          return;
+        }
+      }
+      natural(event);
+    }
+
+    const cancel = () => active?.abort();
+    const sync = () => { cancel(); schedule(); };
+    function scroll() {
+      lastScroll = performance.now();
+      cancel();
+    }
+    schedule();
     window.addEventListener("companion-divider", natural);
+    window.addEventListener("companion-spotlight", spotlight);
     window.addEventListener("scroll", scroll, { passive: true });
-    window.addEventListener("resize", handleResize);
-    document.addEventListener("visibilitychange", cancelTravel);
-    motion.addEventListener("change", cancelTravel);
+    window.addEventListener("resize", cancel);
+    document.addEventListener("visibilitychange", sync);
+    motion.addEventListener("change", sync);
     return () => {
-      clearInterval(interval);
-      window.removeEventListener("companion-open", open);
+      clearTimeout(timer);
+      cancel();
       window.removeEventListener("companion-divider", natural);
+      window.removeEventListener("companion-spotlight", spotlight);
       window.removeEventListener("scroll", scroll);
-      window.removeEventListener("resize", handleResize);
-      document.removeEventListener("visibilitychange", cancelTravel);
-      motion.removeEventListener("change", cancelTravel);
-      chat.current?.abort();
-      cancelTravel();
-      setConversationActive(false);
+      window.removeEventListener("resize", cancel);
+      document.removeEventListener("visibilitychange", sync);
+      motion.removeEventListener("change", sync);
     };
   }, []);
 
-  const openCharacter = panel?.character;
-  useEffect(() => { if (openCharacter) input.current?.focus({ preventScroll: true }); }, [openCharacter]);
-  useEffect(() => { if (log.current) log.current.scrollTop = log.current.scrollHeight; }, [messages, pending]);
-
-  async function launch(character: Character) {
-    if (encounter.current || clock() < cooldown.current) { setNote("Give them a moment before another call."); return; }
-    if (chat.current) { setNote("Let the current reply finish first."); return; }
-    if (!layer.current || !canCall(character)) { setNote("They need a clear landing spot. Try again when both characters are free."); return; }
-    const release = reserveCompanions();
-    if (!release) return;
-    const control = new AbortController();
-    encounter.current = control;
-    close(false);
-    const contextual = ["projects", "skills", "education", "contact"].includes(sceneContext(character).section) && visits("encounters") < 2;
-    let failure = "";
-    try {
-      const completed = await travelTo(character, { layer: layer.current, signal: control.signal, speak }, contextual ? async () => {
-        visits("encounters", true);
-        const result = await ask(requestFor(character, "Share a short observation about this portfolio section.", [], "encounter"),
-          AbortSignal.any([control.signal, AbortSignal.timeout(2600)])).catch(() => null);
-        return result?.source === "groq" && result.reply ? [{ speaker: character, text: result.dialogue }, { speaker: otherCharacter(character), text: result.reply }] : [];
-      } : undefined);
-      if (!completed) failure = "There’s no room to land on this ledge yet.";
-    } catch {
-      if (!control.signal.aborted) {
-        failure = "The characters couldn’t reach the ledge.";
-      }
-    } finally {
-      release();
-      encounter.current = null;
-      cooldown.current = clock() + 18000;
-      if (failure) {
-        openCompanionFromAnchor(character);
-        setNote(failure);
-      }
-      if (anchor.current?.isConnected && document.activeElement === document.body) anchor.current.focus({ preventScroll: true });
-    }
-  }
-
-  function openCompanionFromAnchor(character: Character) {
-    if (anchor.current) window.dispatchEvent(new CustomEvent("companion-open", { detail: { character, anchor: anchor.current } }));
-  }
-
-  function perform(character: Character, action: CompanionAction) {
-    if (!availableActions(character).includes(action)) return;
-    const actor = actorFor(character);
-    if (!actor) return;
-    if (action === "JUMP" || action === "MINE") actor.perform();
-    if ((action === "WAVE" || action === "GREET" || action === "CELEBRATE") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      actor.sprite.animate([{ rotate: "-8deg" }, { rotate: "8deg" }, { rotate: "0deg" }], 360);
-    }
-    if (action === "CALL_MARIO" || action === "CALL_STEVE") void launch(character);
-    if (action === "RESUME_EXPLORATION") close();
-  }
-
-  async function send(text: string) {
-    if (!panel || chat.current || !text.trim()) return;
-    if (visits("messages") >= 12) { setNote("This visit has reached its chat limit."); return; }
-    const character = panel.character;
-    const payload = requestFor(character, text.trim(), messages.slice(1).slice(-6));
-    const control = new AbortController();
-    chat.current = control;
-    visits("messages", true);
-    setPending(true);
-    setNote("");
-    setDraft("");
-    setMessages(previous => [...previous, { role: "user", text: payload.message }]);
-    try {
-      const result = await ask(payload, control.signal);
-      if (control.signal.aborted || result.character !== character) return;
-      setMessages(previous => [...previous, { role: "assistant", text: result.dialogue }]);
-      if (result.source === "local") setNote("Using the portfolio’s built-in answers while AI is unavailable.");
-      chat.current = null;
-      setPending(false);
-      perform(character, result.action);
-    } catch {
-      if (!control.signal.aborted) setNote("The chat connection dropped. Try sending your question again.");
-    } finally {
-      if (chat.current === control) { chat.current = null; setPending(false); }
-    }
-  }
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    void send(draft);
-  }
-  return <>
-    <div ref={layer} className="companion-effects" aria-hidden="true" />
-    {speech && <div className="companion-speech" style={{ left: speech.x, top: speech.y }} role="status"><strong>{names[speech.speaker]}</strong> {speech.text}</div>}
-    {panel && <section className="companion-panel" role="dialog" aria-modal="false" aria-labelledby="companion-title"
-      style={{ left: panel.x, top: panel.y }} onKeyDown={event => { if (event.key === "Escape") close(); }}>
-      <header><strong id="companion-title"><span className="companion-portrait" data-character={panel.character} aria-hidden="true" />Talk to {names[panel.character]}</strong><button type="button" aria-label="Close conversation" onClick={() => close()}>×</button></header>
-      <div className="companion-log" ref={log} role="log" aria-live="polite">
-        {messages.map(({ role, text }, index) => <p key={index} data-role={role}>{text}</p>)}
-        {pending && <p>Thinking…</p>}
-      </div>
-      <div className="companion-options">
-        {messages.length < 3 && suggestions[panel.character].map(text =>
-          <button key={text} type="button" disabled={pending} onClick={() => void send(text)}>{text}</button>)}
-        <button type="button" disabled={pending} onClick={() => void launch(panel.character)}>Call {names[otherCharacter(panel.character)]}</button>
-        <button type="button" onClick={() => actorFor(panel.character)?.perform()}>{panel.character === "mario" ? "Jump" : "Explore & mine"}</button>
-      </div>
-      <form onSubmit={submit}>
-        <input ref={input} aria-label="Message" placeholder="Ask about the portfolio" value={draft}
-          maxLength={450} onChange={event => setDraft(event.target.value)} />
-        <button type="submit" disabled={pending || !draft.trim()}>Send</button>
-      </form>
-      {note && <p className="companion-note" role="status">{note}</p>}
-    </section>}
-  </>;
+  return <div ref={layer} className="companion-effects" aria-hidden="true" />;
 }

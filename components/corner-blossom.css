@@ -22,6 +22,7 @@ body:has(> .corner-world) > main { position: relative; z-index: 1; }
   height: auto;
 }
 
+body:has(.hero-leaves) .corner-petals { display: none; }
 .corner-petals { position: absolute; inset: 0; overflow: clip; }
 .corner-petal, .corner-petal-burst { position: absolute; opacity: 0; }
 .corner-petal { animation: corner-petal-fall linear infinite; }

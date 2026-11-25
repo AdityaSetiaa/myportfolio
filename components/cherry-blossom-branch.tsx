@@ -31,8 +31,8 @@ function VoxelLeafCluster({ x, y, scale = 1, className }: {
         return (
           <g key={index} transform={`translate(${leaf.x} ${leaf.y})`}>
             <path d={`M0 ${-half} ${size} 0 0 ${half} ${-size} 0Z`} fill={colors[0]} />
-            <path d={`M${-size} 0 0 ${half}v${depth}l${-size} ${-half}Z`} fill={colors[1]} />
-            <path d={`M0 ${half} ${size} 0v${depth}L0 ${half + depth}Z`} fill={colors[2]} />
+            <path data-cherry-leaf="" d={`M${-size} 0 0 ${half}v${depth}l${-size} ${-half}Z`} fill={colors[1]} />
+            <path data-cherry-leaf="" d={`M0 ${half} ${size} 0v${depth}L0 ${half + depth}Z`} fill={colors[2]} />
             <path d={`M${-half - 1} ${half + 2}h3v2h-3z M${half - 2} ${half + 1}h2v2h-2z`} fill="#f8d7e1" opacity=".55" />
           </g>
         );

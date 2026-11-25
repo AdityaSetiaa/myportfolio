@@ -1,36 +1,54 @@
 import { z } from "zod";
 
-export const characterSchema = z.enum(["mario", "steve"]);
-export type Character = z.infer<typeof characterSchema>;
-export const names = { mario: "Mario", steve: "Steve" };
+const characters = z.enum(["mario", "steve"]);
+export type Character = z.infer<typeof characters>;
 export const otherCharacter = (character: Character): Character => character === "mario" ? "steve" : "mario";
-export const actions = ["IDLE", "GREET", "WAVE", "JUMP", "MINE", "CALL_MARIO", "CALL_STEVE", "SPEAK", "CELEBRATE", "RESUME_EXPLORATION"] as const;
-export type CompanionAction = typeof actions[number];
-export const sections = ["home", "about", "experience", "projects", "skills", "education", "contact", "other"] as const;
-export type Section = typeof sections[number];
 
-const actorSchema = z.object({
-  state: z.enum(["away", "busy", "ready", "encounter"]),
-  platform: z.enum(["header", "hero-divider", "section-divider", "none"]),
-  nearby: z.boolean(),
+const sections = z.enum(["home", "about", "experience", "projects", "skills", "education", "contact", "other"]);
+
+const actions = z.enum(["INSPECT_OBJECT", "CALL_MARIO", "CALL_STEVE"]);
+export const behaviorContext = z.strictObject({
+  character: characters,
+  scene: z.enum(["discovery", "spotlight"]),
+  section: sections,
+  platform: z.enum(["header", "hero-divider", "section-divider"]),
+  nearbyObject: z.enum(["portal", "project", "ore"]),
+  spotlight: z.boolean(),
+  companionNearby: z.boolean(),
+});
+export type BehaviorContext = z.infer<typeof behaviorContext>;
+
+export const behaviorDecision = z.strictObject({ action: actions });
+export type BehaviorAction = z.infer<typeof actions>;
+
+export function callAction(character: Character) {
+  return character === "mario" ? "CALL_STEVE" : "CALL_MARIO";
+}
+
+const observation = z.string().trim().max(110).regex(/^[\p{L}\p{N} ,.!?'’–-]+$/u).refine(text => {
+  const words = text.split(/ +/).length;
+  return words >= 8 && words <= 15;
 });
 
-export const companionRequest = z.object({
-  character: characterSchema,
-  message: z.string().trim().min(1).max(450),
-  section: z.enum(sections),
-  project: z.enum(["sapoms", "salon-management", "trello-snap"]).optional(),
-  kind: z.enum(["chat", "encounter"]).default("chat"),
-  history: z.array(z.object({ role: z.enum(["user", "assistant"]), text: z.string().max(450) })).max(6).default([]),
-  available: z.array(z.enum(actions)).max(actions.length).default([]),
-  context: z.object({ self: actorSchema, other: actorSchema }).optional(),
+export const leafReactionContext = z.strictObject({
+  height: z.number().int().min(5).max(20),
+  section: sections,
+  marioNearby: z.boolean(),
+  steveActivity: z.enum(["idle", "exploring", "mining"]),
+  recent: z.array(observation).max(3),
 });
-export type CompanionRequest = z.infer<typeof companionRequest>;
 
-export const companionDecision = z.object({
-  character: characterSchema,
-  dialogue: z.string().trim().min(1).max(380),
-  action: z.enum(actions),
-  reply: z.string().trim().max(180),
-});
-export type CompanionDecision = z.infer<typeof companionDecision>;
+export const leafObservation = z.strictObject({ text: observation });
+
+export const reactionKey = (text: string) => text.toLowerCase().replace(/[^\p{L}\p{N} ]/gu, "").replace(/ +/g, " ").trim();
+
+export const localLeafObservations = [
+  "I brought a pickaxe. The leaves seem unimpressed by it.",
+  "Apparently this tree has an unlimited supply of cherry leaves.",
+  "I may have underestimated how much inventory space leaves need.",
+  "These leaves are doing a better job of building than I am.",
+  "I left for one mining trip and the tree redecorated.",
+  "I think the tree is trying to claim this biome.",
+  "The leaves appear to be winning. I need a shovel.",
+  "I could mine a whole mountain before this tree finishes.",
+];

@@ -1,9 +1,13 @@
 export const themeStorageKey = "portfolio-theme";
 
 export const restoreThemeBeforePaint = `
-  try {
-    if (localStorage.getItem("${themeStorageKey}") === "light") {
-      document.documentElement.dataset.theme = "light";
-    }
-  } catch {}
+  (() => {
+    const root = document.documentElement;
+    if (root.hasAttribute("data-theme")) return;
+    let theme = "dark";
+    try {
+      if (localStorage.getItem("${themeStorageKey}") === "light") theme = "light";
+    } catch {}
+    root.dataset.theme = theme;
+  })();
 `;

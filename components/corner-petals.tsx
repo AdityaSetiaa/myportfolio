@@ -36,6 +36,7 @@ export function CornerPetals() {
     function trackPointer(event: PointerEvent) {
       if (!hover.matches || document.hidden || !visible || event.pointerType !== "mouse") return;
       if (event.clientX < window.innerWidth / 2) { leave(); return; }
+      if (document.querySelector(".hero-leaves")) return;
       const rect = branch!.getBoundingClientRect();
       const x = (event.clientX - rect.left) / rect.width;
       const y = (event.clientY - rect.top) / rect.height;

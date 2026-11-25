@@ -2,6 +2,7 @@ type Span = { left: number; right: number };
 
 const clearance = 4;
 const borderSelector = "[data-mario-platform]";
+export const marioTourArea = ".portfolio-sections, [data-mario-area]";
 const obstacleSelector = "a, button, input, select, textarea, svg:not(.hero-biome-art), [data-mario-obstacle], img, .project-visual, [contenteditable]";
 
 export function measureMarioPlatform(slot: HTMLElement, mobile: boolean) {
@@ -39,7 +40,7 @@ export function measureMarioPlatform(slot: HTMLElement, mobile: boolean) {
   }
 
   // Include neighboring sections because Mario stands above the border he is using.
-  const content = platform.closest(".portfolio-sections")!;
+  const content = platform.closest(marioTourArea)!;
   for (const obstacle of content.querySelectorAll(obstacleSelector)) {
     // Card borders can be used if their contents clear the walking band.
     if (obstacle !== platform) avoid(obstacle.getBoundingClientRect());

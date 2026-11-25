@@ -141,18 +141,17 @@ function HeroTreeArt() {
     </svg>
   );
 }
-export function CherryBiome({ hero = false }: { hero?: boolean }) {
+export function CherryBiome({ hero = false, artworkOnly = false }: { hero?: boolean; artworkOnly?: boolean }) {
   if (!hero) return (
     <div className="cherry-biome">
       <BiomeArt />
-      <ContactLanternToggle />
+      {!artworkOnly && <ContactLanternToggle />}
     </div>
   );
   return (
     <div className="hero-biome">
       <HeroTreeArt />
-      <VoxelExplorerWorld />
-      <ThemeLanternToggle variant="branch" />
+      {!artworkOnly && <><VoxelExplorerWorld /><ThemeLanternToggle variant="branch" /></>}
     </div>
   );
 }

@@ -77,9 +77,9 @@
 }
 
 .header-mario-sprite {
-  background: url("/header-mario.png") no-repeat;
-  background-size: 300% 100%;
-  background-position-x: calc(var(--frame, 0) * 50%);
+  background: url("/mario-motion.png") no-repeat;
+  background-size: 1000% 100%;
+  background-position-x: calc(var(--frame, 0) * 100% / 9);
   image-rendering: pixelated;
   transform: scaleX(var(--facing, 1));
 }
@@ -88,7 +88,8 @@
   .section-selector .nav-inner { min-height: 100px; }
   .scene-cloud-last { right: max(7%, 64px); }
   .header-mario-strip { --size: 20px; --floor-height: 5px; --block-size: 12px; left: 76px; }
-  .header-mario-runner { width: 24px; height: 24px; display: grid; place-items: end center; }
+  .header-mario-runner { width: 32px; height: 24px; display: grid; place-items: end center; }
+  .header-mario-runner::after { content: ""; position: absolute; inset: -12px 0 0; }
   .header-mario-runner .header-mario-sprite { width: var(--size); height: var(--size); }
 }
 
@@ -137,13 +138,28 @@
 }
 .mario-visitor { position: absolute; right: 0; bottom: 0; width: var(--size); height: var(--size); }
 .mario-stop[data-side="left"] .mario-visitor { left: 0; right: auto; }
-.mario-visitor .header-mario-sprite, .header-mario-lane[data-tour] .header-mario-sprite {
-  animation: mario-door-steps 350ms steps(1, end) infinite;
-}
-@keyframes mario-door-steps {
-  0% { background-position-x: 0%; }
-  33% { background-position-x: 50%; }
-  66% { background-position-x: 100%; }
-}
 @media (max-width: 700px) { .mario-stop { --size: 20px; } }
-.mario-visitor[data-paused] .header-mario-sprite { animation-play-state: paused; }
+
+.header-mario-sprite[data-pose="walking"] { animation: mario-walk 440ms steps(1, end) infinite; }
+.header-mario-sprite[data-pose="running"] { animation: mario-run 280ms steps(1, end) infinite; }
+.header-mario-sprite[data-pose="jumping"] { --frame: 5; }
+.header-mario-sprite[data-pose="turning"] { --frame: 6; }
+.header-mario-sprite[data-pose="waving"] { --frame: 7; }
+.header-mario-sprite[data-pose="celebrating"] { --frame: 8; }
+.header-mario-sprite[data-pose="looking"] { --frame: 9; }
+
+@keyframes mario-walk {
+  0%, 50% { background-position-x: 0%; }
+  25% { background-position-x: calc(100% / 9); }
+  75% { background-position-x: calc(200% / 9); }
+}
+@keyframes mario-run {
+  0%, 50% { background-position-x: calc(200% / 9); }
+  25% { background-position-x: calc(300% / 9); }
+  75% { background-position-x: calc(400% / 9); }
+}
+.header-mario-strip[data-suspended] * { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .header-mario-sprite[data-pose] { animation: none; }
+}

@@ -5,9 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowUpRight, House, UserRound, BriefcaseBusiness, Folder, Code2, GraduationCap, Mail, Download } from "lucide-react";
-import { portfolio } from "../data/portfolio";
 
-const links = [
+const navigation = [
   { label: "Home", href: "/#home", id: "home", Icon: House },
   { label: "About", href: "/#about", id: "about", Icon: UserRound },
   { label: "Experience", href: "/#experience", id: "experience", Icon: BriefcaseBusiness },
@@ -17,7 +16,9 @@ const links = [
   { label: "Contact", href: "/#contact", id: "contact", Icon: Mail },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ name, resume, visible }: { name: string; resume: string; visible: string[] }) {
+  const ordered = visible.flatMap(id => navigation.filter(link => link.id === id));
+  const links = ordered.length ? ordered : [{ ...navigation[3], href: "/projects" }];
   const selectorWindow = useRef<HTMLDivElement>(null);
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -28,16 +29,14 @@ export function SiteHeader() {
     const update = () => {
       setScrolled(window.scrollY > 24);
       if (pathname !== "/") return;
-      const sections = ["home", "about", "experience", "projects", "skills", "education", "contact"]
-        .map((id) => document.getElementById(id))
-        .filter((section) => section !== null);
+      const sections = Array.from(document.querySelectorAll(".portfolio-sections > section[id]"));
       const selectionLine = window.matchMedia("(min-width: 701px)").matches
         ? window.innerHeight * 0.65
         : 180;
       const current = [...sections].reverse().find(
         (section) => section.getBoundingClientRect().top <= selectionLine
       );
-      setActive(current?.id ?? "home");
+      setActive(current?.id ?? sections[0]?.id ?? "projects");
     };
     update();
     window.addEventListener("scroll", update, { passive: true });
@@ -61,13 +60,14 @@ export function SiteHeader() {
     selector.addEventListener("wheel", scrollContent, { passive: false });
     return () => selector.removeEventListener("wheel", scrollContent);
   }, []);
-  const current = pathname.startsWith("/projects") ? "projects" : active;
-  const activeIndex = links.findIndex(({ id }) => id === current);
+  const selected = pathname.startsWith("/projects") ? "projects" : active;
+  const activeIndex = Math.max(0, links.findIndex(({ id }) => id === selected));
+  const current = links[activeIndex].id;
+  const count = links.length;
   const iconTrack = useRef<HTMLDivElement>(null);
   const [labelReplay, setLabelReplay] = useState(0);
   const previousIndex = useRef(activeIndex);
   useLayoutEffect(() => {
-    const count = links.length;
     let steps = activeIndex - previousIndex.current;
     previousIndex.current = activeIndex;
     if (Math.abs(steps) > count / 2) steps -= Math.sign(steps) * count;
@@ -77,18 +77,18 @@ export function SiteHeader() {
       { duration: 340, easing: "cubic-bezier(.22,1,.36,1)" }
     );
     return () => animation?.cancel();
-  }, [activeIndex]);
+  }, [activeIndex, count]);
 
   return <><header className={`site-header section-selector ${scrolled ? "scrolled" : ""}`}>
     <div className="wrap nav-inner">
-      <Link className="brand" href="/" aria-label="Aditya Setia home">AS<span>.</span></Link>
+      <Link className="brand" href="/" aria-label={`${name} home`}>AS<span>.</span></Link>
       <nav className="desktop-nav" aria-label="Main navigation">
         <div ref={selectorWindow} className="selector-window">
         <div className="selector-track" style={{ transform: `translateY(calc(-0.5 * var(--tab-height) - ${activeIndex} * var(--tab-height)))` }}>
         {links.map(({ label, href, id }, index) => <Link key={id} href={href} className={`nav-depth-${Math.min(Math.abs(index - activeIndex), 2)} ${current === id ? "active" : ""}`} aria-current={current === id ? "location" : undefined}><span>{label}</span></Link>)}
         </div>
         </div>
-        {portfolio.resumePath && <a className="resume-link" href={portfolio.resumePath} download>Resume <ArrowUpRight size={15}/></a>}
+        {resume && <a className="resume-link" href={resume} download>Resume <ArrowUpRight size={15}/></a>}
       </nav>
     </div>
     <HeaderMario />
@@ -119,7 +119,7 @@ export function SiteHeader() {
             <Icon size={20} aria-hidden="true" />
           </Link>
         )))}
-        {portfolio.resumePath && <a href={portfolio.resumePath} download aria-label="Download resume"><Download size={20}/></a>}
+        {resume && <a href={resume} download aria-label="Download resume"><Download size={20}/></a>}
         </div>
         </div>
       </nav></>;

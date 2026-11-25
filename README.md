@@ -1,21 +1,55 @@
-# Aditya Setia Portfolio
+# Aditya Setia
 
-A Next.js 16 and React 19 portfolio with static, locally managed content.
+**Full-Stack Software Developer** · Punjab, India · [adityaxsetia@gmail.com](mailto:adityaxsetia@gmail.com)
 
-## Run locally
+I build business applications with TypeScript, Next.js, and Node.js. My work spans API development, database design, authentication, legacy migration, and production support.
 
-Install dependencies with `bun install`, then start development with `bun run dev`. Run `bun run lint` and `bun run build` to validate a production build. Start the compiled site with `bun run start`.
+## Experience
 
-## Customize
+### Software Developer · MiriSoft Solutions
 
-Edit `data/portfolio.ts` for project details, education, skills, contact details, and links. The resume and social links are intentionally unset until verified URLs or a PDF are supplied. Set `resumePath` to a PDF placed under `public` to display the download buttons.
+**Feb 2026 – Present** · Ambala, Haryana
 
-The project visuals are CSS illustrations and can be replaced when authentic screenshots are available. Add a public site URL before configuring a canonical URL or sitemap.
+- Deliver and maintain production applications, from requirements and implementation through testing, deployment, and troubleshooting.
+- Contributed to the SAPOMS migration from a legacy PHP backend, including data migration, authentication, and role-based access.
+- Built a multi-tenant salon platform covering customer management, appointments, billing, loyalty, and reporting.
 
-## Portfolio companions
+## Selected Projects
 
-Click or keyboard-activate Mario or Steve to open their chat. Visitors can ask about the portfolio or call the other character. Mario's Arrow Up and Space controls still jump, and Steve's portal still starts his solo exploration.
+### SAPOMS · Dealer Ordering and Management
 
-Set `GROQ_API_KEY` in the server environment using [`.env.example`](.env.example) as a reference. The fast and reasoning model IDs can be configured with `GROQ_FAST_MODEL` and `GROQ_REASONING_MODEL`. Public facts come from `data/portfolio.ts` and the site profile, and scripted dialogue is available when Groq is unavailable. Voice and vision are disabled.
+- Contributed to a platform supporting seven user roles across nine sales regions and two warehouses, with workflows for order approvals, dispatch, invoicing, wallets, and credit controls.
+- Worked on a system that uses JWTs, rotating refresh sessions, email verification, and region-based permissions. AI-assisted ordering and reporting require confirmation before taking action.
+- **Stack** · Next.js, React, TypeScript, PostgreSQL, Prisma
 
-`GROQ_DAILY_LIMIT` defaults to 120 model requests per server process per UTC day. The endpoint also caps calls per visitor and applies a cooldown after a provider rate limit. The budgets live in process memory and reset on restart.
+### Salon Management · Multi-Tenant SaaS
+
+- Built a platform that keeps tenant and branch data separate while supporting CRM, appointment scheduling, invoicing, discounts, and reporting.
+- **Stack** · Next.js, TypeScript, Node.js, Express, PostgreSQL, Prisma
+
+### Trello Snap · Handwriting-to-Trello Automation
+
+- Built a progressive web app that turns handwritten task lists into Trello cards. Fixed a shared-device credential caching issue and added a regression test.
+- **Stack** · Next.js, TypeScript, MongoDB, Groq Vision API, Trello REST API
+
+### Developer Portfolio · Portfolio CMS
+
+- Built this portfolio with a private content editor for drafts, previews, publishing, and rollbacks. Added autonomous pixel-art companions that explore the site and spotlight recently published content.
+- **Stack** · Next.js, TypeScript, MongoDB Atlas, Mongoose, Auth.js, Cloudinary, Groq
+
+## Technical Skills
+
+- **Frontend** · JavaScript, TypeScript, React, Next.js, Tailwind CSS
+- **Backend** · Node.js, Express, FastAPI, REST APIs, JWT, Auth.js
+- **Data** · PostgreSQL, MongoDB, Prisma, Mongoose, SQLAlchemy
+- **Tools** · Git, GitHub, Postman, Swagger, Cloudinary
+
+## Education
+
+**Master of Computer Applications** · Chandigarh University
+Jul 2026 – Present
+
+**Bachelor of Computer Applications** · Patel Memorial National College
+Aug 2022 – Jun 2025
+
+[Repository setup](docs/setup.md)

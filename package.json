@@ -6,12 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "cms:migrate": "bun run scripts/migrate-portfolio.ts",
+    "cms:admin": "bun run scripts/seed-admin.ts"
   },
   "dependencies": {
+    "cloudinary": "^2",
     "lucide-react": "^1.77.0",
+    "mongoose": "^9",
     "motion": "^14.14.0",
     "next": "16.4.6",
+    "next-auth": "^5.0.0-beta.32",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "^4"

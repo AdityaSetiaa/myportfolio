@@ -290,6 +290,33 @@
   .login-art-brick-stack { bottom: 35px; width: 51px; height: 28px; }
 }
 
+@media (max-height: 800px) {
+  .pixel-login { padding-block: 36px 14px; }
+  .pixel-login-panel { padding-block: 32px 72px; }
+  .pixel-login-brand { font-size: 28px; }
+  .pixel-login-panel h1 {
+    margin-block: 22px;
+    font-size: clamp(2rem, min(8.6vw, 8dvh), 3.25rem);
+  }
+  .pixel-login-form { gap: 12px; }
+  .pixel-login-field { gap: 5px; }
+  .pixel-login-input input { height: 44px; }
+  .pixel-login-submit { min-height: 44px; }
+  .pixel-login-submit-face { min-height: 40px; }
+  .pixel-login-back { margin-top: 16px; }
+  .login-art-blocks { top: 28px; width: min(30%, 134px); }
+  .login-art-pipe { width: min(20%, 66px); }
+}
+
+@media (max-height: 560px) {
+  .pixel-login { padding-block: 24px 8px; }
+  .pixel-login-panel { padding-block: 22px 35px; }
+  .pixel-login-panel h1 { margin-block: 14px; }
+  .pixel-login-back { margin-top: 12px; }
+  .login-art-lantern, .login-art-blossoms, .login-art-pipe, .login-art-brick-stack { display: none; }
+  .login-art-ground { height: 16px; background-size: 52px 16px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pixel-login-input, .pixel-login-submit { transition: none; }
   .pixel-login-loader, .login-art-petal { animation: none; }

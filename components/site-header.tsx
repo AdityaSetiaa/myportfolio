@@ -1,6 +1,7 @@
 "use client";
 import "./section-selector.css";
 import { HeaderMario } from "./header-mario";
+import { MinecartActiveIndicator, MinecartGlyph } from "./minecart-active-indicator";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -33,10 +34,15 @@ export function SiteHeader({ name, resume, visible }: { name: string; resume: st
       const selectionLine = window.matchMedia("(min-width: 701px)").matches
         ? window.innerHeight * 0.65
         : 180;
-      const current = [...sections].reverse().find(
-        (section) => section.getBoundingClientRect().top <= selectionLine
-      );
-      setActive(current?.id ?? sections[0]?.id ?? "projects");
+      const positions = sections.map(section => section.getBoundingClientRect().top);
+      const current = Math.max(0, positions.findLastIndex(top => top <= selectionLine));
+      setActive(previous => {
+        const previousIndex = sections.findIndex(section => section.id === previous);
+        // Keep the current row through small movements around a section boundary.
+        if (previousIndex >= 0 && Math.abs(current - previousIndex) === 1 &&
+          Math.abs(positions[Math.max(current, previousIndex)] - selectionLine) < 8) return previous;
+        return sections[current]?.id ?? "projects";
+      });
     };
     update();
     window.addEventListener("scroll", update, { passive: true });
@@ -84,9 +90,15 @@ export function SiteHeader({ name, resume, visible }: { name: string; resume: st
       <Link className="brand" href="/" aria-label={`${name} home`}>AS<span>.</span></Link>
       <nav className="desktop-nav" aria-label="Main navigation">
         <div ref={selectorWindow} className="selector-window">
-        <div className="selector-track" style={{ transform: `translateY(calc(-0.5 * var(--tab-height) - ${activeIndex} * var(--tab-height)))` }}>
-        {links.map(({ label, href, id }, index) => <Link key={id} href={href} className={`nav-depth-${Math.min(Math.abs(index - activeIndex), 2)} ${current === id ? "active" : ""}`} aria-current={current === id ? "location" : undefined}><span>{label}</span></Link>)}
-        </div>
+          <MinecartActiveIndicator index={activeIndex} />
+          <div className="selector-track" style={{ transform: `translateY(calc((${-activeIndex} - .5) * var(--tab-height)))` }}>
+            {links.map(({ label, href, id }, index) => (
+              <Link key={id} href={href} data-depth={Math.min(3, Math.abs(activeIndex - index))}
+                aria-current={current === id ? "location" : undefined}>
+                <span>{label}</span>
+              </Link>
+            ))}
+          </div>
         </div>
         {resume && <a className="resume-link" href={resume} download>Resume <ArrowUpRight size={15}/></a>}
       </nav>
@@ -115,8 +127,8 @@ export function SiteHeader({ name, resume, visible }: { name: string; resume: st
           <Link data-depth={Math.min(2, Math.abs(copy * links.length + index - activeIndex))} key={copy + id} href={href} aria-label={label} title={label}
             tabIndex={copy === 0 ? undefined : -1} aria-hidden={copy === 0 ? undefined : true}
             onClick={() => { if (id === current) setLabelReplay(value => value + 1); }}
-            aria-current={current === id ? "location" : undefined}>
-            <Icon size={20} aria-hidden="true" />
+            aria-current={copy === 0 && current === id ? "location" : undefined}>
+            {copy === 0 && current === id ? <MinecartGlyph /> : <Icon size={20} aria-hidden="true" />}
           </Link>
         )))}
         {resume && <a href={resume} download aria-label="Download resume"><Download size={20}/></a>}
